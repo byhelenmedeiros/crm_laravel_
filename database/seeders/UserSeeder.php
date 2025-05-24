@@ -15,7 +15,7 @@ class UserSeeder extends Seeder
         User::create([
             'name' => 'Admin UIN Sports',
             'email' => 'admin@uin-sports.pt',
-            'password' => bcrypt('superadmin123'),  // Defina a senha conforme desejado
-        ])->assignRole($superAdminRole);  // Atribui a role 'SuperAdmin' ao usuário
+            'password' => bcrypt('superadmin123'),  
+        ])->assignRole($superAdminRole); 
     }
 }
