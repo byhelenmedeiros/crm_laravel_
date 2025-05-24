@@ -8,10 +8,13 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\Traits\HasRoles;
+use VentureDrake\LaravelCrm\Traits\HasCrmTeams;
+
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -44,9 +47,25 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    // Relacionamento com a Role
-    public function role()
+    public function team()
     {
-        return $this->belongsTo(Role::class);
+        return $this->belongsTo(Team::class, 'team_id');
+    }
+
+    // Helpers para role
+    public function isSuperAdmin()
+    {
+        return $this->role === 'superadmin';
+    }
+
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isUser()
+    {
+        return $this->role === 'user';
     }
 }
+
