@@ -1,82 +1,51 @@
 <template>
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Cabeçalho com título e botão de criar usuário -->
-    <div class="mb-6 flex justify-between items-center">
-      <h1 class="text-2xl font-semibold text-gray-700">Usuários</h1>
-      <Link
-        :href="route('users.create')"
-        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-      >
-        Criar Usuário
-      </Link>
+  <Head title="Lista de Utilizadores" />
+  <AuthenticatedLayout>
+    <div class="mx-auto my-4 px-2">
+      <h1 class="text-xl font-semibold mb-4">Lista de Utilizadores</h1>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead>
+            <tr class="bg-gray-100">
+              <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+              <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Nome</th>
+              <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">E-mail</th>
+              <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ações</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <tr v-for="user in $page.props.users" :key="user.id" class="hover:bg-gray-50">
+              <td class="px-2 py-1 text-xs text-gray-700">{{ user.id }}</td>
+              <td class="px-2 py-1 text-xs text-gray-700">{{ user.name }}</td>
+              <td class="px-2 py-1 text-xs text-gray-700">{{ user.email }}</td>
+              <td class="px-2 py-1">
+                <div class="flex space-x-1">
+                  <Link :href="route('users.show', user.id)" class="px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded">
+                    Ver
+                  </Link>
+                  <Link :href="route('users.edit', user.id)" class="px-2 py-1 bg-green-500 hover:bg-green-600 text-white text-xs rounded">
+                    Editar
+                  </Link>
+                  <button @click="window.confirm('Tem certeza?') && Inertia.delete(route('users.destroy', user.id))" class="px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded">
+                    Excluir
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr v-if="$page.props.users.length === 0">
+              <td colspan="4" class="px-2 py-2 text-center text-xs text-gray-500">
+                Nenhum utilizador encontrado.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-
-    <!-- Tabela de usuários -->
-    <div class="overflow-x-auto">
-      <table class="min-w-full bg-white border border-gray-200">
-        <thead>
-          <tr>
-            <th class="px-4 py-2 border-b text-left">ID</th>
-            <th class="px-4 py-2 border-b text-left">Nome</th>
-            <th class="px-4 py-2 border-b text-left">E-mail</th>
-            <th class="px-4 py-2 border-b text-left">Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="user in users"
-            :key="user.id"
-            class="hover:bg-gray-100"
-          >
-            <td class="px-4 py-2 border-b">{{ user.id }}</td>
-            <td class="px-4 py-2 border-b">{{ user.name }}</td>
-            <td class="px-4 py-2 border-b">{{ user.email }}</td>
-            <td class="px-4 py-2 border-b">
-              <div class="flex space-x-2">
-                <Link
-                  :href="route('users.show', user.id)"
-                  class="text-blue-500 hover:underline"
-                >
-                  Ver
-                </Link>
-                <Link
-                  :href="route('users.edit', user.id)"
-                  class="text-green-500 hover:underline"
-                >
-                  Editar
-                </Link>
-                <button
-                  @click="deleteUser(user.id)"
-                  class="text-red-500 hover:underline"
-                >
-                  Excluir
-                </button>
-              </div>
-            </td>
-          </tr>
-          <tr v-if="users.length === 0">
-            <td colspan="4" class="text-center py-4">Nenhum usuário encontrado.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+  </AuthenticatedLayout>
 </template>
 
 <script setup>
-import { Link, usePage } from '@inertiajs/vue3'
-import { Inertia } from '@inertiajs/inertia'
-
-// Extraímos a lista de usuários das props que a Inertia injeta na página.
-const { users } = usePage().props.value
-
-/**
- * Função para excluir um usuário.
- * Exibe uma confirmação e, se aceita, envia o request via Inertia para a rota 'users.destroy'.
- */
-const deleteUser = (id) => {
-  if (confirm('Você tem certeza que deseja excluir este usuário?')) {
-    Inertia.delete(route('users.destroy', id))
-  }
-}
+import { Head, Link } from '@inertiajs/vue3';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { Inertia } from '@inertiajs/inertia';
 </script>

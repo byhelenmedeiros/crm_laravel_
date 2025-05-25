@@ -3,9 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 
-Route::middleware(['auth'])->group(function () {
-
-
+Route::prefix('crm')->middleware(['auth'])->group(function () {
     // Listagem e visualização de usuários
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
     Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
@@ -37,6 +35,4 @@ Route::middleware(['auth'])->group(function () {
 
     // Exibição de usuários do setor (Team Admin)
     Route::get('/users/team', [UserController::class, 'team'])->name('users.team');
-
 });
-    
