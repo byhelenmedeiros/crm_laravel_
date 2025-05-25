@@ -11,6 +11,7 @@ import {
   faTachometerAlt,
   faUser,
 } from "@fortawesome/free-solid-svg-icons";
+import SidebarMenu from "@/Components/SidebarMenu.vue";
 
 // Estado reativo da sidebar e função de toggle
 const sidebarOpen = ref(true);
@@ -18,13 +19,6 @@ const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value;
 };
 
-const menuItems = [
-  { label: "Dashboard", url: "#", icon: faTachometerAlt },
-  { label: "Perfil", url: "#", icon: faUser },
-  { label: "Configurações", url: "#", icon: faCog },
-  { label: "Utilizadores", url: "#", icon: faUser },
-  { label: "Sair", url: "#", icon: faTimes },
-];
 </script>
 
 <template>
@@ -43,28 +37,15 @@ const menuItems = [
           <FontAwesomeIcon v-else :icon="faBars" class="w-4 h-4" />
         </button>
       </div>
-      <nav>
-        <ul>
-          <li
-            v-for="(item, index) in menuItems"
-            :key="index"
-            class="flex items-center px-4 py-2 hover:bg-gray-200 cursor-pointer"
-          >
-            <FontAwesomeIcon :icon="item.icon" class="w-6 h-6" />
-            <span v-if="sidebarOpen" class="ml-3 text-sm text-gray-700">
-              {{ item.label }}
-            </span>
-          </li>
-        </ul>
-      </nav>
+      <!-- Menu separado -->
+      <SidebarMenu :sidebarOpen="sidebarOpen" />
     </aside>
 
     <!-- Área Principal -->
     <div class="flex-1 flex flex-col">
-      <!-- Top Bar -->
       <header class="flex items-center justify-between bg-white border-b border-gray-200 p-2 transition-all ease-in-out duration-300">
         <div class="flex-1">
-          <!-- Barra de pesquisa com dimensões e transição ajustadas -->
+          <!-- Barra de pesquisa sera criado componente separado futuramente-->
           <input
             type="text"
             placeholder="Pesquisar..."
