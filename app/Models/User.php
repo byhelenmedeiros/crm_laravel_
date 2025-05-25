@@ -12,9 +12,13 @@ use Spatie\Permission\Traits\HasRoles;
 use VentureDrake\LaravelCrm\Traits\HasCrmTeams;
 
 
+
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, HasRoles;
+
+
+            use HasApiTokens, HasFactory, Notifiable, HasRoles;
+            
 
     /**
      * The attributes that are mass assignable.
@@ -51,21 +55,29 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Team::class, 'team_id');
     }
+    // Dentro do seu Model User:
+
+    protected $appends = ['isSuperadmin'];
+
+    public function getIsSuperadminAttribute()
+    {
+        return $this->hasRole('superadmin');
+    }
+
 
     // Helpers para role
     public function isSuperAdmin()
     {
-        return $this->role === 'superadmin';
+        return $this->role_id === 'superadmin';
     }
 
     public function isAdmin()
     {
-        return $this->role === 'admin';
+        return $this->role_id === 'admin';
     }
 
     public function isUser()
     {
-        return $this->role === 'user';
+        return $this->role_id === 'user';
     }
 }
-

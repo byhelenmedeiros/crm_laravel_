@@ -39,6 +39,13 @@
             <FontAwesomeIcon :icon="faCog" class="w-5 h-5" />
           </button>
         </div>
+        <div class="ml-4">
+          <!-- botao para logout -->
+         <Link :href="route('logout')" method="post" as="button" class="text-gray-600 hover:text-gray-800 focus:outline-none">
+  Sair
+</Link>
+
+        </div>
       </header>
 
       <!-- Conteúdo dinâmico injetado via slot -->
@@ -51,11 +58,11 @@
 
 <script setup>
 import { ref } from 'vue';
-import { usePage } from '@inertiajs/vue3';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faBars, faTimes, faEnvelope, faBell, faCog } from '@fortawesome/free-solid-svg-icons';
 import SidebarMenu from '@/Components/SidebarMenu.vue';
-
+import { useForm } from '@inertiajs/vue3';
+import { usePage, Link } from '@inertiajs/vue3';  
 const sidebarOpen = ref(true);
 const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value;

@@ -27,12 +27,15 @@ Route::get('/', function () {
 });
 
 
-Route::prefix('crm')->middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified'])->prefix('crm')->group(function () {
     Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard');
+        return Inertia::render('Dashboard', [
+            'auth' => [
+                'user' => auth()->user(),  // envia dados do usuário logado
+            ],
+        ]);
     })->name('dashboard');
 });
-
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

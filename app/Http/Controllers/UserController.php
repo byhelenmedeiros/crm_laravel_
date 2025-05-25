@@ -19,14 +19,17 @@ class UserController extends Controller
      *
      * @return Response
      */
-    public function index(): Response
-    {
-        $users = User::all();
-        return Inertia::render('Users/Index', [
-            'users' => $users,
-        ]);
-    }
+public function index(): Response
+{
+    $users = User::whereDoesntHave('roles', function ($query) {
+        $query->where('name', 'superadmin');
+    })->get();
 
+    return Inertia::render('Users/Index', [
+        'users' => $users,
+    ]);
+}
+ 
     /**
      * Exibe os detalhes de um usuário específico.
      *
@@ -65,7 +68,7 @@ class UserController extends Controller
             'name'     => 'required|string|max:255',
             'email'    => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'role'     => 'required|in:admin,user',
+            'role_id'     => 'required|in:admin,user',
         ]);
 
         // Verifica a autorização via policy (ou implementação customizada)
@@ -83,7 +86,7 @@ class UserController extends Controller
             'crm_team_id' => $data['crm_team_id'] ?? null,
         ]);
 
-        $user->assignRole($data['role']);
+        $user->assignRole($data['role_id']);
 
         return redirect()
             ->route('users.index')
@@ -116,7 +119,7 @@ class UserController extends Controller
             'name'     => 'required|string|max:255',
             'email'    => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:8|confirmed',
-            'role'     => 'required|in:admin,user',
+            'role_id'     => 'required|in:admin,user',
         ]);
 
         $this->authorize('update', $user);
@@ -129,7 +132,7 @@ class UserController extends Controller
         }
 
         $user->save();
-        $user->syncRoles([$data['role']]);
+        $user->syncRoles([$data['role_id']]);
 
         return redirect()
             ->route('users.index')

@@ -26,6 +26,9 @@ Route::prefix('crm')->middleware(['auth'])->group(function () {
             ->name('users.teamadmin.create');
         Route::post('/users/team-admin', [UserController::class, 'storeTeamAdmin'])
             ->name('users.teamadmin.store');
+       //listar team index
+           Route::get('/users/team-admin', [UserController::class, 'teamAdminIndex'])
+                ->name('users.teamadmin.index');     
     });
 
     // Exclusão de usuários
