@@ -57,29 +57,35 @@ class User extends Authenticatable
     {
     return $this->belongsTo(Team::class, 'current_crm_team_id');
     }
-    // Dentro do seu Model User:
 
-    protected $appends = ['isSuperadmin'];
-
+    protected $appends = ['isSuperadmin', 'isAdmin', 'isUser'];
+    /**
+     * Check if the user has a specific role.
+     *
+     * @param string $role
+     * @return bool
+     */
+    
     public function getIsSuperadminAttribute()
     {
         return $this->hasRole('superadmin');
     }
 
-
-    // Helpers para role
-    public function isSuperAdmin()
+    public function getIsAdminAttribute()
     {
-        return $this->role_id === 'superadmin';
+        return $this->hasRole('admin');
     }
-
+    public function getIsUserAttribute()
+    {
+        return $this->hasRole('user');
+    }
     public function isAdmin()
-    {
-        return $this->role_id === 'admin';
-    }
+{
+    return $this->hasRole('admin');
+}
 
-    public function isUser()
-    {
-        return $this->role_id === 'user';
-    }
+public function isUser()
+{
+    return $this->hasRole('user');
+}
 }

@@ -9,10 +9,11 @@ Route::prefix('crm')->middleware(['auth'])->group(function () {
     Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
 
     // Criação de usuários (normal)
-    Route::middleware(['can:create,user'])->group(function () {
-        Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
-        Route::post('/users', [UserController::class, 'store'])->name('users.store');
-    });
+   Route::middleware(['role:admin'])->group(function () {
+    Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+    Route::post('/users/store', [UserController::class, 'store'])->name('users.store');
+});
+
 
     // Edição de usuários
     Route::middleware(['can:update,user'])->group(function () {

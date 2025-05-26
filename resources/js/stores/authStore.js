@@ -14,5 +14,8 @@ export const useAuthStore = defineStore('auth', {
     isSuperadmin(state) {
       return state.user ? Boolean(state.user.isSuperadmin) : false;
     },
+    isAdmin(state) {
+      return state.user ? Boolean(state.user.isAdmin) : false;
+    },
   },
 });

@@ -24,7 +24,7 @@ createInertiaApp({
     setup({ el, App, props, plugin }) {
         const app = createApp({ render: () => h(App, props) });
         const pinia = createPinia();
-        app.use(pinia); // registra Pinia
+        app.use(pinia); 
         app.use(plugin);
         app.use(ZiggyVue);
         app.component("FontAwesomeIcon", FontAwesomeIcon);
@@ -48,6 +48,7 @@ createInertiaApp({
             },
             { immediate: true } // roda imediatamente na montagem
         );
+        
 
         app.mount(el);
     },

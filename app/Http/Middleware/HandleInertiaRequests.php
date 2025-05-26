@@ -36,6 +36,8 @@ public function share(Request $request)
                 'name' => $request->user()->name,
                 'email' => $request->user()->email,
                 'isSuperadmin' => $request->user()->hasRole('superadmin'),
+                'isAdmin' => $request->user()->hasRole('admin'),
+                'isUser' => $request->user()->hasRole('user'),  
             ] : null,
         ],
     ]);

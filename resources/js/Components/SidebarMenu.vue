@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { route } from 'ziggy-js';
 import { useAuthStore } from '@/stores/authStore';
@@ -23,12 +23,15 @@ const props = defineProps({
 const authStore = useAuthStore();
 const page = usePage();
 
+const user = computed(() => authStore.user);
+const isSuperadmin = computed(() => authStore.isSuperadmin);
+const isAdmin = computed(() => authStore.isAdmin);
+
 watch(
   () => page.props.auth?.user,
-  (newUser) => {
-    if (newUser) {
-      authStore.setUser(newUser);
-      console.log('[SidebarMenu] authStore atualizado com:', newUser);
+  (user) => {
+    if (user) {
+      authStore.setUser(user);
     }
   },
   { immediate: true }
@@ -44,13 +47,14 @@ const menuItems = ref([
 const submenuOpen = ref(false);
 const toggleSubmenu = () => {
   submenuOpen.value = !submenuOpen.value;
-  console.log("SidebarMenu - submenuOpen:", submenuOpen.value);
 };
 </script>
+
 <template>
-  <div v-if="authStore.user">
-    <p class="text-xs text-red-500 mb-2">Role ID: {{ authStore.user.role_id }}</p>
-    <p class="text-xs text-blue-500 mb-2">isSuperadmin: {{ authStore.isSuperadmin }}</p>
+  <div v-if="user">
+    <p class="text-xs text-red-500 mb-2">Role ID: {{ user.role_id }}</p>
+    <p class="text-xs text-blue-500 mb-2">isSuperadmin: {{ isSuperadmin }}</p>
+    <p class="text-xs text-blue-500 mb-2">isAdmin: {{ isAdmin }}</p>
 
     <nav>
       <ul>
@@ -68,7 +72,7 @@ const toggleSubmenu = () => {
                 <span v-if="sidebarOpen" class="ml-3 text-sm">{{ item.label }}</span>
               </Link>
               <button
-                v-if="authStore.isSuperadmin && sidebarOpen"
+                v-if="(isSuperadmin || isAdmin) && sidebarOpen"
                 @click.stop="toggleSubmenu"
                 class="ml-auto"
                 aria-label="Toggle submenu"
@@ -81,12 +85,12 @@ const toggleSubmenu = () => {
             </div>
 
             <ul
-              v-if="authStore.isSuperadmin"
+              v-if="isSuperadmin || isAdmin" 
               v-show="submenuOpen && sidebarOpen"
               class="ml-8"
             >
               <li class="flex items-center px-4 py-2 hover:bg-gray-200 cursor-pointer">
-                <Link @click.stop :href="route('users.index')" class="flex items-center w-full">
+                <Link @click.stop :href="route(isAdmin ? 'users.create' : 'users.index')" class="flex items-center w-full">
                   <FontAwesomeIcon :icon="faList" class="w-5 h-5" />
                   <span class="ml-3 text-sm">Listar Utilizadores</span>
                 </Link>
@@ -94,7 +98,7 @@ const toggleSubmenu = () => {
               <li class="flex items-center px-4 py-2 hover:bg-gray-200 cursor-pointer">
                 <Link
                   @click.stop
-                  :href="route('teams.teamadmin.create')"
+                  :href="route(isAdmin ? 'users.createBasicUser' : 'teams.teamadmin.create')" 
                   class="flex items-center w-full"
                 >
                   <FontAwesomeIcon :icon="faPlus" class="w-5 h-5" />
@@ -118,4 +122,3 @@ const toggleSubmenu = () => {
     </nav>
   </div>
 </template>
-

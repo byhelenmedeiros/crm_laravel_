@@ -71,12 +71,14 @@ public function index(): Response
             'name'     => 'required|string|max:255',
             'email'    => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'role_id'     => 'required|in:admin,user',
+            
         ]);
+            if (auth()->user()->hasRole('admin')) {
+        $data['crm_team_id'] = auth()->user()->crm_team_id;  // Garantir que o admin só crie usuários no seu time
+    }
 
         $this->authorize('create', [$data['role']]);
 
-        // Se o usuário logado tiver role "admin", associa automaticamente o crm_team_id
         if (auth()->user()->hasRole('admin')) {
             $data['crm_team_id'] = auth()->user()->crm_team_id;
         }
@@ -85,8 +87,9 @@ public function index(): Response
             'name'        => $data['name'],
             'email'       => $data['email'],
             'password'    => Hash::make($data['password']),
-            'crm_team_id' => $data['crm_team_id'] ?? null,
+             'crm_team_id' => $data['crm_team_id'],
         ]);
+        
 
         $user->assignRole($data['role_id']);
 
@@ -203,29 +206,5 @@ public function storeTeamAdmin(Request $request)
 }
 }
 
-//admin cria users do proprio team
-public function storeUserTeam(Request $request)
-{
-    $userLogged = Auth::user();
 
-    $validated = $request->validate([
-        'name' => ['required', 'string', 'max:255'],
-        'email' => ['required', 'email', 'unique:users,email'],
-        'password' => ['required', 'string', 'min:8', 'confirmed'],
-    ]);
-
-    $user = User::create([
-        'name' => $validated['name'],
-        'email' => $validated['email'],
-        'password' => Hash::make($validated['password']),
-        'crm_team_id' => $userLogged->crm_team_id,  
-        'role_id' => 3,  
-    ]);
-    $user->assignRole('user'); 
-
-    return response()->json([
-        'success' => true,
-        'message' => 'Usuário criado com sucesso no seu departamento!',
-    ]);
-}
 }
