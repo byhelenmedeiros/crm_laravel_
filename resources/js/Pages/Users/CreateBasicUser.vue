@@ -1,91 +1,53 @@
 <template>
-  <div class="max-w-lg mx-auto p-6 bg-white rounded shadow">
-    <h1 class="text-2xl font-bold mb-6">Criar Novo Usuário</h1>
+  <AuthenticatedLayout>
     <form @submit.prevent="submit">
-      <!-- Campo Nome -->
-      <div class="mb-4">
-        <label for="name" class="block text-sm font-medium text-gray-700">Nome</label>
-        <input
-          id="name"
-          type="text"
-          v-model="form.name"
-          placeholder="Digite o nome"
-          class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
-        />
-        <div v-if="form.errors.name" class="text-red-500 text-xs mt-1">
-          {{ form.errors.name }}
-        </div>
+      <div>
+        <label>Nome</label>
+        <input v-model="form.name" />
       </div>
-      
-      <!-- Campo E-mail -->
-      <div class="mb-4">
-        <label for="email" class="block text-sm font-medium text-gray-700">E-mail</label>
-        <input
-          id="email"
-          type="email"
-          v-model="form.email"
-          placeholder="exemplo@dominio.com"
-          class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
-        />
-        <div v-if="form.errors.email" class="text-red-500 text-xs mt-1">
-          {{ form.errors.email }}
-        </div>
-      </div>
-      
-      <!-- Campo Senha -->
-      <div class="mb-4">
-        <label for="password" class="block text-sm font-medium text-gray-700">Senha</label>
-        <input
-          id="password"
-          type="password"
-          v-model="form.password"
-          placeholder="Digite a senha"
-          class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
-        />
-        <div v-if="form.errors.password" class="text-red-500 text-xs mt-1">
-          {{ form.errors.password }}
-        </div>
+      <div>
+        <label>E-mail</label>
+        <input v-model="form.email" type="email" />
       </div>
 
-      <!-- Campo Confirmação de Senha -->
-      <div class="mb-6">
-        <label for="password_confirmation" class="block text-sm font-medium text-gray-700">Confirmar Senha</label>
-        <input
-          id="password_confirmation"
-          type="password"
-          v-model="form.password_confirmation"
-          placeholder="Confirme a senha"
-          class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
-        />
-        <div v-if="form.errors.password_confirmation" class="text-red-500 text-xs mt-1">
-          {{ form.errors.password_confirmation }}
-        </div>
+      <div>
+        <label>Senha</label>
+        <input v-model="form.password" type="password" />
       </div>
-      
-      <button
-        type="submit"
-        class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md"
-      >
-        Criar Usuário
-      </button>
+
+      <div>
+        <label>Confirmar Senha</label>
+        <input v-model="form.password_confirmation" type="password" />
+      </div>
+
+      <div>
+        <label>Departamento</label>
+        <input :value="teamName" disabled />
+      </div>
+
+      <button :disabled="form.processing">Criar Usuário</button>
     </form>
-  </div>
+  </AuthenticatedLayout>
 </template>
 
 <script setup>
-import { useForm } from '@inertiajs/inertia-vue3'
+import { ref } from 'vue';
+import { useForm } from '@inertiajs/inertia-vue3';
+import { usePage } from '@inertiajs/vue3';
 
-// Inicializa o formulário com os campos necessários.
-// Note que o campo 'role' não é exposto pois o controlador já definirá o role "user".
+const page = usePage();
+const teamName = ref(page.props.auth.user.team_name || ''); 
+
 const form = useForm({
   name: '',
   email: '',
   password: '',
   password_confirmation: '',
-})
+});
 
-// Ao submeter, os dados do formulário são enviados para a rota 'users.store'
 const submit = () => {
-  form.post(route('users.store'))
-}
+  form.post(route('users.team.store'), {
+    onSuccess: () => form.reset(),
+  });
+};
 </script>

@@ -10,6 +10,9 @@ use Inertia\Response;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
+use App\Models\team; 
+use Illuminate\Support\Facades\Log;
+
 
 
 class UserController extends Controller
@@ -71,7 +74,6 @@ public function index(): Response
             'role_id'     => 'required|in:admin,user',
         ]);
 
-        // Verifica a autorização via policy (ou implementação customizada)
         $this->authorize('create', [$data['role']]);
 
         // Se o usuário logado tiver role "admin", associa automaticamente o crm_team_id
@@ -162,41 +164,68 @@ public function index(): Response
      *
      * @return Response
      */
-    public function createTeamAdmin(): Response
-    {
-        return Inertia::render('Users/CreateTeamAdmin');
-    }
+public function createTeamAdmin(): Response
+{
+    $teams = Team::all(['id', 'name']); 
+    return Inertia::render('Teams/CreateTeamAdmin', [
+        'teams' => $teams,
+    ]);
+}
+public function storeTeamAdmin(Request $request)
+{   Log::info('storeTeamAdmin chamado', ['request' => $request->all()]);
 
-    /**
-     * Armazena um novo Administrador do Setor (Team Admin).
-     *
-     * Valida os dados, associa o novo Team Admin ao crm_team_id do superadmin autenticado
-     * e atribui automaticamente o role "team_admin".
-     *
-     * @param  Request  $request
-     * @return RedirectResponse
-     */
-    public function storeTeamAdmin(Request $request): RedirectResponse
-    {
-        $validated = $request->validate([
-            'name'     => ['required', 'string', 'max:255'],
-            'email'    => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-        ]);
+  try {  $validated = $request->validate([
+        'name'        => ['required', 'string', 'max:255'],
+        'email'       => ['required', 'string', 'email', 'max:255', 'unique:users'],
+        'password'    => ['required', 'string', 'min:8', 'confirmed'],
+        'crm_team_id' => ['required', 'exists:crm_teams,id'],
+    ]);
 
-        $crmTeamId = auth()->user()->crm_team_id ?? null;
+    Log::info('Dados validados:', $validated);
 
-        $user = User::create([
-            'name'        => $validated['name'],
-            'email'       => $validated['email'],
-            'password'    => Hash::make($validated['password']),
-            'crm_team_id' => $crmTeamId,
-        ]);
+    // Role_id para admin = 2 (conforme sua imagem)
+    $roleAdminId = 2;
 
-        $user->assignRole('team_admin');
+    $user = User::create([
+        'name'               => $validated['name'],
+        'email'              => $validated['email'],
+        'password'           => Hash::make($validated['password']),
+        'current_crm_team_id'=> $validated['crm_team_id'], 
+        'role_id'            => $roleAdminId,              
+    ]);
 
-        return redirect()
-            ->route('users.index')
-            ->with('success', 'Administrador do Setor criado com sucesso!');
-    }
+   Log::info('Administrador do time criado:', ['user_id' => $user->id]);
+
+    return response()->json(['success' => true, 'message' => 'Administrador criado com sucesso!']);
+} catch (\Exception $e) {
+    Log::error('Erro ao criar administrador do time: ' . $e->getMessage());
+    return response()->json(['success' => false, 'message' => 'Erro interno no servidor.'], 500);
+}
+}
+
+//admin cria users do proprio team
+public function storeUserTeam(Request $request)
+{
+    $userLogged = Auth::user();
+
+    $validated = $request->validate([
+        'name' => ['required', 'string', 'max:255'],
+        'email' => ['required', 'email', 'unique:users,email'],
+        'password' => ['required', 'string', 'min:8', 'confirmed'],
+    ]);
+
+    $user = User::create([
+        'name' => $validated['name'],
+        'email' => $validated['email'],
+        'password' => Hash::make($validated['password']),
+        'crm_team_id' => $userLogged->crm_team_id,  
+        'role_id' => 3,  
+    ]);
+    $user->assignRole('user'); 
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Usuário criado com sucesso no seu departamento!',
+    ]);
+}
 }

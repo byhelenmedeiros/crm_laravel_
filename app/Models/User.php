@@ -26,9 +26,11 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
-        'email',
-        'password',
+         'name',
+    'email',
+    'password',
+    'current_crm_team_id',
+    'role_id',
     ];
 
     /**
@@ -53,7 +55,7 @@ class User extends Authenticatable
 
     public function team()
     {
-        return $this->belongsTo(Team::class, 'team_id');
+    return $this->belongsTo(Team::class, 'current_crm_team_id');
     }
     // Dentro do seu Model User:
 

@@ -94,7 +94,7 @@ const toggleSubmenu = () => {
               <li class="flex items-center px-4 py-2 hover:bg-gray-200 cursor-pointer">
                 <Link
                   @click.stop
-                  :href="route('users.teamadmin.create')"
+                  :href="route('teams.teamadmin.create')"
                   class="flex items-center w-full"
                 >
                   <FontAwesomeIcon :icon="faPlus" class="w-5 h-5" />
@@ -104,7 +104,7 @@ const toggleSubmenu = () => {
               <li class="flex items-center px-4 py-2 hover:bg-gray-200 cursor-pointer">
                 <Link
                   @click.stop
-                  :href="route('users.teamadmin.index')"
+                  :href="route('teams.teamadmin.index')"
                   class="flex items-center w-full"
                 >
                   <FontAwesomeIcon :icon="faUserShield" class="w-5 h-5" />

@@ -23,12 +23,12 @@ Route::prefix('crm')->middleware(['auth'])->group(function () {
     // Criação de Administradores do Setor (Team Admin)
     Route::middleware(['role:superadmin'])->group(function () {
         Route::get('/users/team-admin/create', [UserController::class, 'createTeamAdmin'])
-            ->name('users.teamadmin.create');
+            ->name('teams.teamadmin.create');
         Route::post('/users/team-admin', [UserController::class, 'storeTeamAdmin'])
-            ->name('users.teamadmin.store');
+            ->name('teams.teamadmin.store');
        //listar team index
            Route::get('/users/team-admin', [UserController::class, 'teamAdminIndex'])
-                ->name('users.teamadmin.index');     
+                ->name('teams.teamadmin.index');     
     });
 
     // Exclusão de usuários
