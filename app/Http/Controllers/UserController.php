@@ -8,10 +8,9 @@ use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Auth;
 use App\Models\team; 
 use Illuminate\Support\Facades\Log;
+
 
 
 
@@ -51,52 +50,54 @@ public function index(): Response
      *
      * @return Response
      */
-    public function create(): Response
-    {
-        return Inertia::render('Users/CreateBasicUser');
+public function create(): Response
+{
+    return Inertia::render('Users/CreateBasicUser');
+}
+
+public function store(Request $request): \Illuminate\Http\JsonResponse
+{
+    // Validar os dados recebidos
+    $data = $request->validate([
+        'name'     => 'required|string|max:255',
+        'email'    => 'required|string|email|max:255|unique:users',
+        'password' => 'required|string|min:8|confirmed',
+    ]);
+
+    // Verificar se o usuário autenticado tem permissão para criar um novo usuário (role admin)
+    if (!auth()->user()->hasRole('admin')) {
+        return response()->json(['error' => 'Não autorizado'], 403);
     }
 
-    /**
-     * Armazena um novo usuário (normal).
-     *
-     * Valida os dados informados, associa o crm_team_id se o usuário logado for admin,
-     * e atribui o role conforme informado.
-     *
-     * @param  Request  $request
-     * @return RedirectResponse
-     */
-    public function store(Request $request): RedirectResponse
-    {
-        $data = $request->validate([
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-            
-        ]);
-            if (auth()->user()->hasRole('admin')) {
-        $data['crm_team_id'] = auth()->user()->crm_team_id;  // Garantir que o admin só crie usuários no seu time
-    }
+    // Definir o crm_team_id como o mesmo do admin autenticado
+    $data['crm_team_id'] = auth()->user()->current_crm_team_id ?? auth()->user()->crm_team_id;
 
-        $this->authorize('create', [$data['role']]);
+    // Definir role_id como 3 (role 'user')
+    $data['role_id'] = 3;  // role_id 3 é sempre 'user'
 
-        if (auth()->user()->hasRole('admin')) {
-            $data['crm_team_id'] = auth()->user()->crm_team_id;
-        }
-
+    try {
+        // Criar o novo usuário com os dados recebidos
         $user = User::create([
-            'name'        => $data['name'],
-            'email'       => $data['email'],
-            'password'    => Hash::make($data['password']),
-             'crm_team_id' => $data['crm_team_id'],
+            'name'               => $data['name'],
+            'email'              => $data['email'],
+            'password'           => Hash::make($data['password']),
+            'crm_team_id'        => $data['crm_team_id'],
+            'current_crm_team_id'=> $data['crm_team_id'],
+            'role_id'            => $data['role_id'],  // Definindo role_id como 3
         ]);
-        
 
-        $user->assignRole($data['role_id']);
+        // Atribuir a role 'user' ao novo usuário
+        $user->assignRole('user');
 
-        return redirect()
-            ->route('users.index')
-            ->with('success', 'Usuário criado com sucesso!');
+        // Retornar resposta JSON com sucesso
+        return response()->json(['success' => 'Usuário criado com sucesso!', 'user' => $user]);
+
+    } catch (\Exception $e) {
+        // Caso haja erro, retornar resposta JSON com erro
+        return response()->json(['error' => 'Erro ao criar usuário', 'message' => $e->getMessage()], 500);
     }
+}
+
 
     /**
      * Exibe o formulário para editar um usuário.
@@ -186,7 +187,6 @@ public function storeTeamAdmin(Request $request)
 
     Log::info('Dados validados:', $validated);
 
-    // Role_id para admin = 2 (conforme sua imagem)
     $roleAdminId = 2;
 
     $user = User::create([

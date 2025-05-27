@@ -10,32 +10,32 @@ import { ref } from 'vue';
 import { useToast } from 'vue-toastification';
 
 defineProps({
-    podeReporSenha: {
+    canResetPassword: {
         type: Boolean,
     },
-    estado: {
+    status: {
         type: String,
     },
 });
 
-const formulario = useForm({
+const form = useForm({
     email: '',
-    senha: '',
-    lembrar: false,
+    password: '',
+    remember: false,
 });
 
-const Showpassword = ref(false);
+const showPassword = ref(false);
 const toast = useToast();
 
-const submeter = () => {
-    formulario.post(route('login'), {
+const submit = () => {
+    form.post(route('login'), {
         onFinish: () => {
-            if (formulario.errors.length === 0) {
+            if (Object.keys(form.errors).length === 0) {
                 toast.success('Login realizado com sucesso!');
             } else {
                 toast.error('Erro ao realizar login, verifique os dados!');
             }
-            formulario.reset('senha');
+            form.reset('password');
         },
     });
 };
@@ -48,16 +48,15 @@ const submeter = () => {
         <div class="flex items-center justify-center h-72">
             <div class="bg-white flex w-full">
                 <div class="w-1/2 flex items-center justify-center">
-                    <img src="images/Logo-UIN-high.png" alt="Logotipo" class="w-28 h-28"> 
+                    <img src="images/Logo-UIN-high.png" alt="Logotipo" class="w-28 h-28" /> 
                 </div>
 
-                <!-- Container do Formulário -->
                 <div class="w-1/2">
-                    <div v-if="estado" class="mb-4 font-medium text-sm text-green-600">
-                        {{ estado }}
+                    <div v-if="status" class="mb-4 font-medium text-sm text-green-600">
+                        {{ status }}
                     </div>
 
-                    <form @submit.prevent="submeter">
+                    <form @submit.prevent="submit">
                         <div>
                             <InputLabel for="email" value="Email" />
 
@@ -65,57 +64,56 @@ const submeter = () => {
                                 id="email"
                                 type="email"
                                 class="mt-1 block w-full h-8 rounded-sm"
-                                v-model="formulario.email"
+                                v-model="form.email"
                                 required
                                 autofocus
                                 autocomplete="username"
                             />
 
-                            <InputError class="mt-2" :message="formulario.errors.email" />
+                            <InputError class="mt-2" :message="form.errors.email" />
                         </div>
 
                         <div class="mt-4 relative">
-                            <InputLabel for="senha" value="Senha" />
+                            <InputLabel for="password" value="Senha" />
 
-                            <!-- Campo de senha com ícone para mostrar/ocultar -->
                             <div class="relative">
                                 <TextInput
-                                    id="senha"
-                                    :type="Showpassword ? 'text' : 'password'"
+                                    id="password"
+                                    :type="showPassword ? 'text' : 'password'"
                                     class="mt-1 block w-full h-8 rounded-sm pr-10"
-                                    v-model="formulario.senha"
+                                    v-model="form.password"
                                     required
                                     autocomplete="current-password"
                                 />
                                 <button 
                                     type="button" 
-                                    @click="Showpassword = !Showpassword" 
+                                    @click="showPassword = !showPassword" 
                                     class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500"
                                 >
-                                    <i :class="Showpassword ? 'fa fa-eye' : 'fa fa-eye-slash'"></i>
+                                    <i :class="showPassword ? 'fa fa-eye' : 'fa fa-eye-slash'"></i>
                                 </button>
                             </div>
 
-                            <InputError class="mt-2" :message="formulario.errors.senha" />
+                            <InputError class="mt-2" :message="form.errors.password" />
                         </div>
 
                         <div class="block mt-4">
                             <label class="flex items-center">
-                                <Checkbox name="lembrar" v-model:checked="formulario.lembrar" />
+                                <Checkbox name="remember" v-model:checked="form.remember" />
                                 <span class="ms-2 text-sm text-gray-600">Lembrar-me</span>
                             </label>
                         </div>
 
                         <div class="flex items-center justify-end mt-4">
                             <Link
-                                v-if="podeReporSenha"
+                                v-if="canResetPassword"
                                 :href="route('password.request')"
                                 class="underline text-sm text-gray-600 hover:text-gray-900 rounded-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                             >
                                 Esqueceu-se da sua senha?
                             </Link>
 
-                            <PrimaryButton :class="{ 'opacity-25': formulario.processing }" :disabled="formulario.processing">
+                            <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
                                 Iniciar sessão
                             </PrimaryButton>
                         </div>

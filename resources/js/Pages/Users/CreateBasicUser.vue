@@ -83,8 +83,6 @@
 </template>
 
 <script setup>
-import { Head } from '@inertiajs/vue3'
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import { useForm } from '@inertiajs/inertia-vue3'
 import { ref } from 'vue'
 import { useToast } from 'vue-toastification'
@@ -92,6 +90,7 @@ import { useToast } from 'vue-toastification'
 const toast = useToast()
 const errorMessages = ref([])
 
+// Formulário usando Inertia useForm para facilitar controle de erros e estado
 const form = useForm({
   name: '',
   email: '',
@@ -101,6 +100,7 @@ const form = useForm({
 
 const submit = () => {
   errorMessages.value = []
+
   form.post(route('users.store'), {
     preserveScroll: true,
     onSuccess: () => {
@@ -114,16 +114,16 @@ const submit = () => {
 
       for (const key in errors) {
         if (Object.hasOwnProperty.call(errors, key)) {
-          const messages = errors[key]
-          if (Array.isArray(messages)) {
-            messages.forEach(msg => errorMessages.value.push(msg))
+          const msgs = errors[key]
+          if (Array.isArray(msgs)) {
+            msgs.forEach(msg => errorMessages.value.push(msg))
           } else {
-            errorMessages.value.push(messages)
+            errorMessages.value.push(msgs)
           }
         }
       }
-      console.error('Erros do formulário:', errors)
     },
   })
 }
 </script>
+
