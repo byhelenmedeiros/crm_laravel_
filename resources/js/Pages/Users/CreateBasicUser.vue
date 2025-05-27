@@ -111,18 +111,6 @@ const submit = () => {
     onError: (errors) => {
       toast.error('Erro ao criar usuário. Verifique os dados.')
 
-      // Limpando e preenchendo mensagens de erro gerais (fora dos campos)
-      errorMessages.value = []
-      for (const key in errors) {
-        if (Object.hasOwnProperty.call(errors, key)) {
-          const msgs = errors[key]
-          if (Array.isArray(msgs)) {
-            msgs.forEach(msg => errorMessages.value.push(msg))
-          } else {
-            errorMessages.value.push(msgs)
-          }
-        }
-      }
     },
   })
 }
