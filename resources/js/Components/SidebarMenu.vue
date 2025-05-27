@@ -84,38 +84,50 @@ const toggleSubmenu = () => {
               </button>
             </div>
 
-            <ul
-              v-if="isSuperadmin || isAdmin" 
-              v-show="submenuOpen && sidebarOpen"
-              class="ml-8"
-            >
-              <li class="flex items-center px-4 py-2 hover:bg-gray-200 cursor-pointer">
-                <Link @click.stop :href="route(isAdmin ? 'users.create' : 'users.index')" class="flex items-center w-full">
-                  <FontAwesomeIcon :icon="faList" class="w-5 h-5" />
-                  <span class="ml-3 text-sm">Listar Utilizadores</span>
-                </Link>
-              </li>
-              <li class="flex items-center px-4 py-2 hover:bg-gray-200 cursor-pointer">
-                <Link
-                  @click.stop
-                  :href="route(isAdmin ? 'users.createBasicUser' : 'teams.teamadmin.create')" 
-                  class="flex items-center w-full"
-                >
-                  <FontAwesomeIcon :icon="faPlus" class="w-5 h-5" />
-                  <span class="ml-3 text-sm">Criar Administrador</span>
-                </Link>
-              </li>
-              <li class="flex items-center px-4 py-2 hover:bg-gray-200 cursor-pointer">
-                <Link
-                  @click.stop
-                  :href="route('teams.teamadmin.index')"
-                  class="flex items-center w-full"
-                >
-                  <FontAwesomeIcon :icon="faUserShield" class="w-5 h-5" />
-                  <span class="ml-3 text-sm">Admins de Setor</span>
-                </Link>
-              </li>
-            </ul>
+           <ul
+  v-if="isSuperadmin || isAdmin"
+  v-show="submenuOpen && sidebarOpen"
+  class="ml-8"
+>
+  <!-- Listar Usuários (tanto admin quanto superadmin veem) -->
+  <li class="flex items-center px-4 py-2 hover:bg-gray-200 cursor-pointer">
+    <Link :href="route('users.index')" class="flex items-center w-full">
+      <FontAwesomeIcon :icon="faList" class="w-5 h-5" />
+      <span class="ml-3 text-sm">Listar Utilizadores</span>
+    </Link>
+  </li>
+
+  <!-- Criar Usuários -->
+  <li v-if="isAdmin" class="flex items-center px-4 py-2 hover:bg-gray-200 cursor-pointer">
+    <Link :href="route('users.create')" class="flex items-center w-full">
+      <FontAwesomeIcon :icon="faPlus" class="w-5 h-5" />
+      <span class="ml-3 text-sm">Criar Utilizador</span>
+    </Link>
+  </li>
+
+  <!-- Itens exclusivos do superadmin -->
+  <template v-if="isSuperadmin">
+    <li class="flex items-center px-4 py-2 hover:bg-gray-200 cursor-pointer">
+      <Link
+        :href="route('teams.teamadmin.create')"
+        class="flex items-center w-full"
+      >
+        <FontAwesomeIcon :icon="faPlus" class="w-5 h-5" />
+        <span class="ml-3 text-sm">Criar Administrador</span>
+      </Link>
+    </li>
+    <li class="flex items-center px-4 py-2 hover:bg-gray-200 cursor-pointer">
+      <Link
+        :href="route('teams.teamadmin.index')"
+        class="flex items-center w-full"
+      >
+        <FontAwesomeIcon :icon="faUserShield" class="w-5 h-5" />
+        <span class="ml-3 text-sm">Admins de Setor</span>
+      </Link>
+    </li>
+  </template>
+</ul>
+
           </template>
         </li>
       </ul>
