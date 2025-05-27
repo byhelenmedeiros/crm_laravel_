@@ -4,7 +4,6 @@
     <aside :class="sidebarOpen ? 'w-64' : 'w-16'" class="bg-white border-r border-gray-200 transition-all duration-300 overflow-hidden">
       <div class="p-4 flex items-center justify-between">
         <span v-if="sidebarOpen" class="text-lg font-bold text-gray-800">Uin Sports</span>
-        <span v-else class="text-lg font-bold text-gray-800">US</span>
         <button @click="toggleSidebar" class="p-2 focus:outline-none">
           <FontAwesomeIcon v-if="sidebarOpen" :icon="faTimes" class="w-4 h-4" />
           <FontAwesomeIcon v-else :icon="faBars" class="w-4 h-4" />

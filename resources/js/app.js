@@ -46,7 +46,7 @@ createInertiaApp({
                     authStore.setUser(newUser);
                 }
             },
-            { immediate: true } // roda imediatamente na montagem
+            { immediate: true } 
         );
         
 
