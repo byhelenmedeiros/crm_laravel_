@@ -8,106 +8,82 @@ use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Http\RedirectResponse;
-use App\Models\team; 
+use App\Models\Team;
 use Illuminate\Support\Facades\Log;
-
-
-
 
 class UserController extends Controller
 {
     /**
-     * Exibe a listagem de usuários.
-     *
-     * @return Response
+     * Exibe a listagem de usuários, excluindo os superadmins.
      */
-public function index(): Response
-{
-    $users = User::whereDoesntHave('roles', function ($query) {
-        $query->where('name', 'superadmin');
-    })->get();
+    public function index(): Response
+    {
+        $users = User::whereDoesntHave('roles', function ($query) {
+            $query->where('name', 'superadmin');
+        })->get();
 
-    return Inertia::render('Users/Index', [
-        'users' => $users,
-    ]);
-}
- 
+        return Inertia::render('Users/Index', [
+            'users' => $users,
+        ]);
+    }
+
     /**
      * Exibe os detalhes de um usuário específico.
-     *
-     * @param  User  $user
-     * @return Response
      */
     public function show(User $user): Response
     {
         return Inertia::render('Users/Show', [
             'user' => $user,
         ]);
-              $this->authorize('view', $user);  // Verifica com a política se o usuário pode visualizar o perfil
-
-        return inertia('Users/Show', compact('user'));  // Retorna a visualização com Inertia
-
     }
 
     /**
-     * Exibe o formulário para criar um novo usuário (normal).
-     *
-     * @return Response
+     * Exibe o formulário para criar um novo usuário.
      */
-public function create(): Response
-{
-    return Inertia::render('Users/CreateBasicUser');
-}
-
-public function store(Request $request): \Illuminate\Http\JsonResponse
-{
-    // Validar os dados recebidos
-    $data = $request->validate([
-        'name'     => 'required|string|max:255',
-        'email'    => 'required|string|email|max:255|unique:users',
-        'password' => 'required|string|min:8|confirmed',
-    ]);
-
-    // Verificar se o usuário autenticado tem permissão para criar um novo usuário (role admin)
-    if (!auth()->user()->hasRole('admin')) {
-        return response()->json(['error' => 'Não autorizado'], 403);
+    public function create(): Response
+    {
+        return Inertia::render('Users/CreateBasicUser');
     }
 
-    // Definir o crm_team_id como o mesmo do admin autenticado
-    $data['crm_team_id'] = auth()->user()->current_crm_team_id ?? auth()->user()->crm_team_id;
-
-    // Definir role_id como 3 (role 'user')
-    $data['role_id'] = 3;  // role_id 3 é sempre 'user'
-
-    try {
-        // Criar o novo usuário com os dados recebidos
-        $user = User::create([
-            'name'               => $data['name'],
-            'email'              => $data['email'],
-            'password'           => Hash::make($data['password']),
-            'crm_team_id'        => $data['crm_team_id'],
-            'current_crm_team_id'=> $data['crm_team_id'],
-            'role_id'            => $data['role_id'],  // Definindo role_id como 3
+    /**
+     * Armazena um novo usuário no banco de dados.
+     */
+    public function store(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $data = $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
         ]);
 
-        // Atribuir a role 'user' ao novo usuário
-        $user->assignRole('user');
+        if (!auth()->user()->hasRole('admin')) {
+            return response()->json(['error' => 'Não autorizado'], 403);
+        }
 
-        // Retornar resposta JSON com sucesso
-        return response()->json(['success' => 'Usuário criado com sucesso!', 'user' => $user]);
+        $data['crm_team_id'] = auth()->user()->current_crm_team_id ?? auth()->user()->crm_team_id;
+        $data['role_id'] = 3;
 
-    } catch (\Exception $e) {
-        // Caso haja erro, retornar resposta JSON com erro
-        return response()->json(['error' => 'Erro ao criar usuário', 'message' => $e->getMessage()], 500);
+        try {
+            $user = User::create([
+                'name'               => $data['name'],
+                'email'              => $data['email'],
+                'password'           => Hash::make($data['password']),
+                'crm_team_id'        => $data['crm_team_id'],
+                'current_crm_team_id'=> $data['crm_team_id'],
+                'role_id'            => $data['role_id'],
+            ]);
+
+            $user->assignRole('user');
+
+            return response()->json(['success' => 'Usuário criado com sucesso!', 'user' => $user]);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erro ao criar usuário', 'message' => $e->getMessage()], 500);
+        }
     }
-}
-
 
     /**
      * Exibe o formulário para editar um usuário.
-     *
-     * @param  User  $user
-     * @return Response
      */
     public function edit(User $user): Response
     {
@@ -118,10 +94,6 @@ public function store(Request $request): \Illuminate\Http\JsonResponse
 
     /**
      * Atualiza os dados de um usuário.
-     *
-     * @param  Request  $request
-     * @param  User     $user
-     * @return RedirectResponse
      */
     public function update(Request $request, User $user): RedirectResponse
     {
@@ -129,7 +101,7 @@ public function store(Request $request): \Illuminate\Http\JsonResponse
             'name'     => 'required|string|max:255',
             'email'    => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:8|confirmed',
-            'role_id'     => 'required|in:admin,user',
+            'role_id'  => 'required|in:admin,user',
         ]);
 
         $this->authorize('update', $user);
@@ -144,71 +116,64 @@ public function store(Request $request): \Illuminate\Http\JsonResponse
         $user->save();
         $user->syncRoles([$data['role_id']]);
 
-        return redirect()
-            ->route('users.index')
-            ->with('success', 'Usuário atualizado com sucesso!');
+        return redirect()->route('users.index')->with('success', 'Usuário atualizado com sucesso!');
     }
 
     /**
      * Remove um usuário.
-     *
-     * @param  User  $user
-     * @return RedirectResponse
      */
     public function destroy(User $user): RedirectResponse
     {
         $this->authorize('delete', $user);
         $user->delete();
 
-        return redirect()
-            ->route('users.index')
-            ->with('success', 'Usuário excluído com sucesso!');
+        return redirect()->route('users.index')->with('success', 'Usuário excluído com sucesso!');
     }
 
     /**
      * Exibe o formulário para criar um Administrador do Setor (Team Admin).
-     *
-     * Esse método será chamado apenas por usuários com role "superadmin".
-     *
-     * @return Response
      */
-public function createTeamAdmin(): Response
-{
-    $teams = Team::all(['id', 'name']); 
-    return Inertia::render('Teams/CreateTeamAdmin', [
-        'teams' => $teams,
-    ]);
-}
-public function storeTeamAdmin(Request $request)
-{   Log::info('storeTeamAdmin chamado', ['request' => $request->all()]);
+    public function createTeamAdmin(): Response
+    {
+        $teams = Team::all(['id', 'name']); 
+        return Inertia::render('Teams/CreateTeamAdmin', [
+            'teams' => $teams,
+        ]);
+    }
 
-  try {  $validated = $request->validate([
-        'name'        => ['required', 'string', 'max:255'],
-        'email'       => ['required', 'string', 'email', 'max:255', 'unique:users'],
-        'password'    => ['required', 'string', 'min:8', 'confirmed'],
-        'crm_team_id' => ['required', 'exists:crm_teams,id'],
-    ]);
+    /**
+     * Armazena um novo Administrador do Setor (Team Admin).
+     */
+    public function storeTeamAdmin(Request $request)
+    {
+        Log::info('storeTeamAdmin chamado', ['request' => $request->all()]);
 
-    Log::info('Dados validados:', $validated);
+        try {
+            $validated = $request->validate([
+                'name'        => ['required', 'string', 'max:255'],
+                'email'       => ['required', 'string', 'email', 'max:255', 'unique:users'],
+                'password'    => ['required', 'string', 'min:8', 'confirmed'],
+                'crm_team_id' => ['required', 'exists:crm_teams,id'],
+            ]);
 
-    $roleAdminId = 2;
+            Log::info('Dados validados:', $validated);
 
-    $user = User::create([
-        'name'               => $validated['name'],
-        'email'              => $validated['email'],
-        'password'           => Hash::make($validated['password']),
-        'current_crm_team_id'=> $validated['crm_team_id'], 
-        'role_id'            => $roleAdminId,              
-    ]);
+            $roleAdminId = 2;
 
-   Log::info('Administrador do time criado:', ['user_id' => $user->id]);
+            $user = User::create([
+                'name'               => $validated['name'],
+                'email'              => $validated['email'],
+                'password'           => Hash::make($validated['password']),
+                'current_crm_team_id'=> $validated['crm_team_id'],
+                'role_id'            => $roleAdminId,
+            ]);
 
-    return response()->json(['success' => true, 'message' => 'Administrador criado com sucesso!']);
-} catch (\Exception $e) {
-    Log::error('Erro ao criar administrador do time: ' . $e->getMessage());
-    return response()->json(['success' => false, 'message' => 'Erro interno no servidor.'], 500);
-}
-}
+            Log::info('Administrador do time criado:', ['user_id' => $user->id]);
 
-
+            return response()->json(['success' => true, 'message' => 'Administrador criado com sucesso!']);
+        } catch (\Exception $e) {
+            Log::error('Erro ao criar administrador do time: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Erro interno no servidor.'], 500);
+        }
+    }
 }

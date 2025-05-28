@@ -19,7 +19,6 @@
           <input type="text" placeholder="Pesquisar..." class="w-64 p-1 border border-gray-300 text-sm transition-all duration-300" />
         </div>
         <div class="ml-4 flex items-center space-x-3">
-          <!-- Acesse os dados via a variável 'page' -->
           <div v-if="page.props.auth" class="hidden md:block mr-4 text-right">
             <div class="font-semibold text-sm text-gray-800">
               {{ page.props.auth.user.name }}
@@ -47,7 +46,6 @@
         </div>
       </header>
 
-      <!-- Conteúdo dinâmico injetado via slot -->
       <main class="flex-1 p-2 text-sm transition-all duration-300">
         <slot />
       </main>

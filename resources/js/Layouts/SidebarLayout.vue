@@ -25,7 +25,6 @@ import {
 // Controle do estado da sidebar: expandida ou recolhida
 const sidebarOpen = ref(true);
 
-// Array de itens do menu com rotas reais (ajuste os nomes das rotas conforme sua aplicação)
 const menuItems = [
   { label: 'Dashboard', url: route('dashboard'), icon: faTachometerAlt },
   { label: 'Employees', url: route('employees.index'), icon: faUsers },

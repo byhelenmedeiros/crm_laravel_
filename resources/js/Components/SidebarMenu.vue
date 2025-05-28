@@ -52,10 +52,10 @@ const toggleSubmenu = () => {
 
 <template>
   <div v-if="user">
-    <p class="text-xs text-red-500 mb-2">Role ID: {{ user.role_id }}</p>
+   <!-- <p class="text-xs text-red-500 mb-2">Role ID: {{ user.role_id }}</p>
     <p class="text-xs text-blue-500 mb-2">isSuperadmin: {{ isSuperadmin }}</p>
     <p class="text-xs text-blue-500 mb-2">isAdmin: {{ isAdmin }}</p>
-
+  -->
     <nav>
       <ul>
         <li v-for="(item, index) in menuItems" :key="index" class="flex flex-col">
