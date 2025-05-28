@@ -43,6 +43,10 @@ public function index(): Response
         return Inertia::render('Users/Show', [
             'user' => $user,
         ]);
+              $this->authorize('view', $user);  // Verifica com a política se o usuário pode visualizar o perfil
+
+        return inertia('Users/Show', compact('user'));  // Retorna a visualização com Inertia
+
     }
 
     /**

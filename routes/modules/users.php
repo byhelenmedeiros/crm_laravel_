@@ -7,11 +7,14 @@ Route::prefix('crm')->middleware(['auth'])->group(function () {
     // Listagem e visualização de usuários
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
     Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
+    
+
 
     // Criação de usuários (normal)
    Route::middleware(['role:admin'])->group(function () {
     Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
     Route::post('/users/store', [UserController::class, 'store'])->name('users.store');
+    
 });
 
 
