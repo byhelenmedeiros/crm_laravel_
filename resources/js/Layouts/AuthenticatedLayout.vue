@@ -57,7 +57,8 @@
 import { ref } from 'vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faBars, faTimes, faEnvelope, faBell, faCog } from '@fortawesome/free-solid-svg-icons';
-import SidebarMenu from '@/Components/SidebarMenu.vue';
+import SidebarMenu from '@/Components/Sidebar.vue';
+import SubMenu from '@/Components/SubMenu.vue';
 import { useForm } from '@inertiajs/vue3';
 import { usePage, Link } from '@inertiajs/vue3';  
 const sidebarOpen = ref(true);

@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Client;
 use App\Models\CrmAddress;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
+
 
 class ClientController extends Controller
 {
@@ -69,5 +72,17 @@ class ClientController extends Controller
         ]);
 
         return response()->json(['client' => $client, 'address' => $address], 201);
+    }
+
+    /**
+     * Exibe a lista de clientes.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index()
+    {
+        $clients = Client::with('address')->get(); // Carrega os clientes com seus endereços
+
+        return response()->json($clients);
     }
 }
