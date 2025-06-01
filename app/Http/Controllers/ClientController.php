@@ -5,8 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Client;
 use App\Models\CrmAddress;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
+use Inertia\Inertia;
 
 
 class ClientController extends Controller
@@ -17,14 +16,19 @@ class ClientController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\Response
      */
-    public function createClient(Request $request)
+    public function create(Request $request)
     {
+
         $user = auth()->user();
 
-        if (!$user->isAdmin()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
+   
+    if (!$user->isAdmin()) {
+        return response()->json(['message' => 'Unauthorized'], 403);
+    }
+            return Inertia::render('Clients/CreateClient'); // componente Vue que tem o form
+    }
+    public function store(Request $request)
+{
         // Validar os dados de entrada
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -81,8 +85,10 @@ class ClientController extends Controller
      */
     public function index()
     {
-        $clients = Client::with('address')->get(); // Carrega os clientes com seus endereços
+        $clients = Client::all(); 
+       return Inertia::render('Clients/Index', [
+    'clients' => $clients
+]);
 
-        return response()->json($clients);
     }
 }

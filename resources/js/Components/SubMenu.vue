@@ -72,29 +72,26 @@ function toggleSubmenu() {
       </template>
     </template>
 
-    <!-- Submenu de Clientes -->
-    <template v-if="item.label === 'Clientes'">
-      <li class="flex items-center px-4 py-2 hover:bg-gray-200 cursor-pointer">
-        <Link :href="route('clients.index')" class="flex items-center w-full">
-          <FontAwesomeIcon :icon="faList" class="w-4 h-4" />
-          <span class="ml-3 text-sm">Listar Clientes</span>
-        </Link>
-      </li>
+ <template v-if="item.label === 'Clientes'">
+  <!-- Link para listar os clientes -->
+  <li class="flex items-center px-4 py-2 hover:bg-gray-200 cursor-pointer">
+    <Link :href="route('clients.index')" class="flex items-center w-full">
+      <FontAwesomeIcon :icon="faList" class="w-4 h-4" />
+      <span class="ml-3 text-sm">Listar Clientes</span>
+    </Link>
+  </li>
 
-      <li v-if="isAdmin || isSuperadmin" class="flex items-center px-4 py-2 hover:bg-gray-200 cursor-pointer">
-        <Link :href="route('clients.create')" class="flex items-center w-full">
-          <FontAwesomeIcon :icon="faPlus" class="w-4 h-4" />
-          <span class="ml-3 text-sm">Criar Cliente</span>
-        </Link>
-      </li>
+  <!-- Link para criar um cliente, disponível para admins ou superadmins -->
+  <li v-if="isAdmin || isSuperadmin" class="flex items-center px-4 py-2 hover:bg-gray-200 cursor-pointer">
+   <Link :href="route('clients.createClient')" class="...">
+  <FontAwesomeIcon :icon="faPlus" class="w-4 h-4" />
+  <span class="ml-3 text-sm">Criar Cliente</span>
+</Link>
 
-      <!-- Ver Cliente (se o usuário estiver logado) -->
-      <li v-if="user && user.id" class="flex items-center px-4 py-2 hover:bg-gray-200 cursor-pointer">
-        <Link :href="route('clients.show', { id: user.id })" class="flex items-center w-full">
-          <FontAwesomeIcon :icon="faUser" class="w-4 h-4" />
-          <span class="ml-3 text-sm">Ver Cliente</span>
-        </Link>
-      </li>
-    </template>
+  </li>
+
+
+</template>
+
   </ul>
 </template>
