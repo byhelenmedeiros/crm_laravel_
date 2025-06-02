@@ -133,28 +133,27 @@
 <script setup>
 import { reactive } from 'vue'
 import { Link, Head, usePage } from '@inertiajs/inertia-vue3'
-import { Inertia } from '@inertiajs/inertia'  
+import { Inertia } from '@inertiajs/inertia'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 
-const { props } = usePage()
-const clients = props.clients
+const { clients, filters } = usePage().props.value
 
-const filters = reactive({
-  name: props.filters?.name || '',
-  email: props.filters?.email || '',
-  phone: props.filters?.phone || '',
-  address: props.filters?.address || '',
+const filtersReactive = reactive({
+  name: filters?.name || '',
+  email: filters?.email || '',
+  phone: filters?.phone || '',
+  address: filters?.address || '',
 })
 
 function applyFilters() {
-  Inertia.get(route('clients.index'), filters, { preserveState: true, replace: true })
+  Inertia.get(route('clients.index'), filtersReactive, { preserveState: true, replace: true })
 }
 
 function resetFilters() {
-  filters.name = ''
-  filters.email = ''
-  filters.phone = ''
-  filters.address = ''
+  filtersReactive.name = ''
+  filtersReactive.email = ''
+  filtersReactive.phone = ''
+  filtersReactive.address = ''
   Inertia.get(route('clients.index'), {}, { preserveState: true, replace: true })
 }
 </script>

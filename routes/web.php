@@ -31,7 +31,9 @@ Route::middleware(['auth', 'verified'])->prefix('crm')->group(function () {
     Route::get('/dashboard', function () {
         return Inertia::render('Dashboard', [
             'auth' => [
-                'user' => auth()->user(),  // envia dados do usuário logado
+                'user' => auth()->user(),  
+                'isAdmin' => auth()->user()->isAdmin,
+                'isSuperadmin' => auth()->user()->isSuperadmin,
             ],
         ]);
     })->name('dashboard');

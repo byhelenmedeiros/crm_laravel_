@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 
-Route::prefix('crm')->middleware(['auth'])->group(function () {
+Route::prefix('crm')->middleware(['auth'])->group(callback: function () {
     // Listagem e visualização de usuários
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
     Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');

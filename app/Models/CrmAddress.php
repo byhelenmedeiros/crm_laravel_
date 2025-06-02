@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+
 class CrmAddress extends Model
 {
     use HasFactory;
@@ -77,6 +78,15 @@ class CrmAddress extends Model
     {
         return $this->belongsTo(User::class, 'user_restored_id');
     }
+   public function addressable()
+{
+    return $this->morphTo();
+}
+
+public function addressType()
+{
+    return $this->belongsTo(CrmAddressType::class, 'address_type_id');
+}
 }
 
 

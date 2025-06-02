@@ -13,12 +13,17 @@ class Client extends Model
 
     protected $fillable = [
         'id',
+
         'external_id',
-        'team_id',
+        // 'team_id',
         'clientable_type',
         'clientable_id',
-        'name', 
-        'crm_addresses_id', 
+        'name',
+        'nif',
+        'client_group_id',
+        'address_type_id',  
+        'address', 
+        'crm_addresses_id',
         'user_created_id',
         'user_updated_id',
         'user_deleted_id',
@@ -70,5 +75,25 @@ class Client extends Model
     public function restoredBy()
     {
         return $this->belongsTo(User::class, 'user_restored_id');
+    }
+    public function addresses()
+    {
+        return $this->morphMany(CrmAddress::class, 'addressable');
+    }
+
+    /**
+     * Relacionamento com o usuário proprietário do cliente (User)
+     */
+    public function owner()
+    {
+        return $this->belongsTo(User::class, 'user_owner_id');
+    }
+
+    /**
+     * Relacionamento com o usuário atribuído ao cliente (User)
+     */
+    public function assigned()
+    {
+        return $this->belongsTo(User::class, 'user_assigned_id');
     }
 }
