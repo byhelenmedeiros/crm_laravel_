@@ -25,6 +25,14 @@
                 >
                     Morada
                 </button>
+                <button
+                    @click="activeTab = 'grupos'"
+                    :class="tabClass('grupos')"
+                    class="px-4 py-2 text-sm font-semibold"
+                    type="button"
+                >
+                    Grupos de clientes
+                </button>
             </nav>
 
             <form @submit.prevent="submit" class="space-y-4">
@@ -69,36 +77,6 @@
                                 class="mt-1 text-xs text-red-600"
                             >
                                 {{ form.errors.nif }}
-                            </p>
-                        </div>
-                        <div>
-                            <label
-                                for="client_group_id"
-                                class="block text-gray-700 mb-1 text-sm font-medium"
-                                >Grupo do cliente</label
-                            >
-                            
-                            <select
-                                id="client_group_id"
-                                v-model="form.client_group_id"
-                                class="w-full border border-gray-300 rounded px-2 py-2 text-sm outline-none focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-600"
-                            >
-                                <option value="" disabled>
-                                    Selecionar grupo de cliente
-                                </option>
-                                <option
-                                    v-for="group in clientGroups"
-                                    :key="group.id"
-                                    :value="group.id"
-                                >
-                                    {{ group.name }}
-                                </option>
-                            </select>
-                            <p
-                                v-if="form.errors.client_group_id"
-                                class="mt-1 text-xs text-red-600"
-                            >
-                                {{ form.errors.client_group_id }}
                             </p>
                         </div>
 
@@ -369,14 +347,99 @@
                         </div>
                     </div>
                 </section>
+                <!-- Grupos de Clientes -->
 
-                <div class="pt-4 border-t border-gray-300">
+                <!-- Aba de Grupos de Clientes -->
+                <section v-if="activeTab === 'grupos'">
+                    <p class="text-gray-700 text-sm">
+                        Selecione um grupo de clientes para associar a este
+                        cliente.
+                    </p>
+
+                    <!-- Grid responsivo: uma coluna em telas pequenas, duas colunas em md+ -->
+                    <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Coluna 1: Grupo de Cliente -->
+                        <div>
+                            <label
+                                for="client_group_id"
+                                class="block text-gray-700 mb-1 text-sm font-medium"
+                            >
+                                Grupo do cliente
+                            </label>
+                            <select
+                                id="client_group_id"
+                                v-model="form.client_group_id"
+                                @change="onGroupChange"
+                                class="w-full border border-gray-300 rounded px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-600"
+                            >
+                                <option value="" disabled>
+                                    Selecionar grupo de cliente
+                                </option>
+                                <option
+                                    v-for="group in clientGroups"
+                                    :key="group.id"
+                                    :value="group.id"
+                                >
+                                    {{ group.name }}
+                                </option>
+                            </select>
+                            <p
+                                v-if="form.errors.client_group_id"
+                                class="mt-1 text-xs text-red-600"
+                            >
+                                {{ form.errors.client_group_id }}
+                            </p>
+                        </div>
+
+                        <!-- Coluna 2: Subdivisão (aparece só se existirem entradas) -->
+                        <div v-if="subdivisions.length">
+                            <label
+                                for="group_subdivision_id"
+                                class="block text-gray-700 mb-1 text-sm font-medium"
+                            >
+                                Subgrupo / Subdivisão
+                            </label>
+                            <select
+                                id="group_subdivision_id"
+                                v-model="form.group_subdivision_id"
+                                class="w-full border border-gray-300 rounded px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-600"
+                            >
+                                <option value="" disabled>
+                                    Selecionar subgrupo
+                                </option>
+                                <option
+                                    v-for="sub in subdivisions"
+                                    :key="sub.id"
+                                    :value="sub.id"
+                                >
+                                    {{ sub.name }}
+                                </option>
+                            </select>
+                            <p
+                                v-if="form.errors.group_subdivision_id"
+                                class="mt-1 text-xs text-red-600"
+                            >
+                                {{ form.errors.group_subdivision_id }}
+                            </p>
+                        </div>
+
+                        <!-- Se não houver subdivisões, deixamos espaço em branco para manter o grid alinhado -->
+                        <div v-else class="invisible">
+                            <!-- Apenas um placeholder invisível para manter as duas colunas alinhadas -->
+                            &nbsp;
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Botão para salvar (fora do section) -->
+                <div class="pt-4">
                     <button
-                        type="submit"
-                        class="text-pink-600 hover:text-pink-800 font-semibold text-sm"
+                        type="button"
+                        @click="submit"
                         :disabled="form.processing"
+                        class="inline-flex items-center px-4 py-2 bg-pink-600 border border-transparent rounded-md font-semibold text-white hover:bg-pink-500 active:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 transition ease-in-out duration-700"
                     >
-                        Criar Cliente
+                        Salvar Cliente
                     </button>
                 </div>
             </form>
@@ -395,17 +458,18 @@
         </div>
     </AuthenticatedLayout>
 </template>
-
 <script setup>
 import { ref } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
 import { useToast } from "vue-toastification";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 
-// Recebe os tipos enviados pelo backend via Inertia
-defineProps({
+const props = defineProps({
     addressTypes: Array,
     clientGroups: Array,
+    subdivisions: Array,
+    selectedGroup: [String, Number, null],
+    selectedSub: [String, Number, null],
 });
 
 const toast = useToast();
@@ -415,8 +479,9 @@ const form = useForm({
     name: "",
     nif: "",
     url: "",
-    address_type_id: null, //
-    client_group_id: null,
+    address_type_id: null,
+    client_group_id: props.selectedGroup || null,
+    group_subdivision_id: props.selectedSub || null,
     address: "",
     contact: "",
     phone: "",
@@ -436,6 +501,30 @@ const tabClass = (tab) =>
     activeTab.value === tab
         ? "border-b-2 border-pink-600 text-pink-600"
         : "border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300";
+
+const subdivisions = ref(props.subdivisions || []);
+
+const onGroupChange = async () => {
+    if (!form.client_group_id) {
+        subdivisions.value = [];
+        form.group_subdivision_id = null;
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `/subdivisoes-por-grupo/${form.client_group_id}`
+        );
+        if (!response.ok) throw new Error("Falha ao carregar subdivisões");
+        const data = await response.json();
+        subdivisions.value = data;
+        form.group_subdivision_id = null;
+    } catch (e) {
+        console.error("Erro ao buscar subdivisões:", e);
+        subdivisions.value = [];
+        form.group_subdivision_id = null;
+    }
+};
 
 const submit = () => {
     form.errorMessages = [];

@@ -58,7 +58,7 @@ class ClientController extends Controller
             'url' => 'nullable|url',
             'clientable_type' => 'nullable|string|max:255',
             'clientable_id' => 'nullable|integer',
-            'address_type_id' => 'required|exists:crm_address_types,id', // ID do tipo
+            'address_type_id' => 'required|exists:crm_address_types,id',  
             'address' => 'required|string|max:255',
             'contact' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:20',
@@ -69,7 +69,8 @@ class ClientController extends Controller
             'city' => 'nullable|string|max:100',
             'state' => 'nullable|string|max:100',
             'country' => 'nullable|string|max:100',
-    'client_group_id' => 'nullable|exists:client_groups,id',
+              'client_group_id'       => 'nullable|exists:client_groups,id',         
+            'group_subdivision_id'  => 'nullable|exists:group_subdivisions,id',  
         ]);
 
         // 1. Cria o cliente primeiro
@@ -82,6 +83,7 @@ class ClientController extends Controller
             'user_created_id' => $user->id,
             'user_updated_id' => $user->id,
     'client_group_id' => $validated['client_group_id'] ?? null,
+            'group_subdivision_id'  => $validated['group_subdivision_id'] ?? null,
 
         ]);
 
@@ -131,26 +133,51 @@ class ClientController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+   public function index(Request $request)
     {
         $query = Client::query();
 
+        // Aplicar filtros se vierem no request
         if ($request->filled('name')) {
             $query->where('name', 'like', "%{$request->name}%");
         }
-
+        if ($request->filled('email')) {
+            // Supondo que você tenha coluna 'email' ou relação para buscar email de contato
+            $query->where('email', 'like', "%{$request->email}%");
+        }
         if ($request->filled('phone')) {
+            // Se ‘phone’ estiver armazenado diretamente em crm_clients, use:
             $query->where('phone', 'like', "%{$request->phone}%");
+            // Caso o telefone venha de crm_addresses, seria preciso um join ou relacionamento.
         }
         if ($request->filled('address')) {
-            $query->where('address', 'like', "%{$request->address}%");
+            $query->whereHas('addresses', function($q) use ($request) {
+                $q->where('address', 'like', "%{$request->address}%");
+            });
         }
 
-        $clients = $query->paginate(10)->withQueryString();
+        // Paginação de 10 em 10 clientes (pode ajustar)
+        $clients = $query
+            ->with(['addresses' => function($q) {
+                $q->where('primary', 1);
+            }])
+            ->orderBy('name')
+            ->paginate(10)
+            ->withQueryString();
 
         return Inertia::render('Clients/Index', [
             'clients' => $clients,
             'filters' => $request->only(['name', 'email', 'phone', 'address']),
         ]);
     }
+
+  public function show($id)
+    {
+        $client = Client::with('addresses.addressType')->findOrFail($id);
+
+        return Inertia::render('Clients/Show', [
+            'client' => $client,
+        ]);
+    }
+
 }

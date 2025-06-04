@@ -10,19 +10,16 @@ class Client extends Model
     use HasFactory;
 
     protected $table = 'crm_clients';
-
-    protected $fillable = [
-        'id',
-
-        'external_id',
-        // 'team_id',
+  protected $fillable = [
+        //'external_id',
         'clientable_type',
         'clientable_id',
         'name',
         'nif',
         'client_group_id',
-        'address_type_id',  
-        'address', 
+        'group_subdivision_id',
+        'address_type_id',
+        'address',
         'crm_addresses_id',
         'user_created_id',
         'user_updated_id',
@@ -30,11 +27,9 @@ class Client extends Model
         'user_restored_id',
         'user_owner_id',
         'user_assigned_id',
-        'created_at',
-        'updated_at',
-        'deleted_at',
         'url',
     ];
+
 
     /**
      * Relacionamento com a tabela crm_addresses
@@ -42,9 +37,8 @@ class Client extends Model
      */
     public function address()
     {
-        return $this->belongsTo(CrmAddress::class, 'crm_addresses_id'); // Define a chave estrangeira
+            return $this->morphMany(CrmAddress::class, 'addressable');
     }
-
     /**
      * Relacionamento com o usuário que criou o cliente (User)
      */
@@ -96,4 +90,20 @@ class Client extends Model
     {
         return $this->belongsTo(User::class, 'user_assigned_id');
     }
+
+     // Relacionamento com o grupo
+    public function group()
+    {
+        return $this->belongsTo(ClientGroup::class, 'client_group_id');
+    }
+
+    // Relacionamento com a subdivisão
+public function subdivision()
+{
+    return $this->belongsTo(GroupSubdivision::class, 'group_subdivision_id');
+}
+public function primaryAddress()
+{
+    return $this->addresses()->where('primary', 1)->first();
+}
 }
