@@ -1,159 +1,421 @@
 <template>
-  <Head title="Lista de Clientes" />
-  <AuthenticatedLayout>
-    <div class="max-w-4xl mx-auto p-4 bg-white rounded shadow-sm">
+    <Head title="Lista de Clientes" />
+    <AuthenticatedLayout>
+        <div class="mx-auto p-4 max-w-7xl space-y-6">
+            <!-- Breadcrumb -->
+            <nav class="text-gray-500 text-sm mb-2" aria-label="Breadcrumb">
+                <ol class="inline-flex space-x-1">
+                    <li>
+                        <Link href="/" class="hover:text-gray-700"
+                            >Dashboard</Link
+                        >
+                        <span class="mx-1">/</span>
+                    </li>
+                    <li class="text-pink-700">Clientes</li>
+                </ol>
+            </nav>
 
-      <div class="flex items-center justify-between mb-6">
-        <h1 class="text-xl font-semibold">Clientes</h1>
-        <Link
-          :href="route('clients.createClient')"
-          class="text-pink-600 hover:text-pink-800 font-semibold text-sm"
-        >
-          + Criar Cliente
-        </Link>
-      </div>
-
-      <!-- Filtros -->
-      <div class="mb-4 overflow-x-auto">
-        <table class="min-w-full text-sm">
-          <thead>
-            <tr>
-              <th class="p-2">
-                <input
-                  type="text"
-                  v-model="filters.name"
-                  @input="applyFilters"
-                  placeholder="Filtrar Nome"
-                  class="w-full border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-600"
-                />
-              </th>
-              <th class="p-2">
-                <input
-                  type="text"
-                  v-model="filters.email"
-                  @input="applyFilters"
-                  placeholder="Filtrar Email"
-                  class="w-full border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-600"
-                />
-              </th>
-              <th class="p-2">
-                <input
-                  type="text"
-                  v-model="filters.phone"
-                  @input="applyFilters"
-                  placeholder="Filtrar Telefone"
-                  class="w-full border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-600"
-                />
-              </th>
-              <th class="p-2">
-                <input
-                  type="text"
-                  v-model="filters.address"
-                  @input="applyFilters"
-                  placeholder="Filtrar Morada"
-                  class="w-full border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-600"
-                />
-              </th>
-              <th class="p-2 text-center">
-                <button
-                  @click="resetFilters"
-                  class="text-xs text-pink-600 hover:text-pink-800 font-semibold underline"
-                  type="button"
-                >
-                  Limpar
-                </button>
-              </th>
-            </tr>
-          </thead>
-        </table>
-      </div>
-
-      <!-- Tabela -->
-      <div class="overflow-x-auto">
-        <table class="w-full border border-gray-200 rounded text-left">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="p-3 border-b border-gray-200 font-medium text-gray-700">Nome</th>
-              <th class="p-3 border-b border-gray-200 font-medium text-gray-700">Email</th>
-              <th class="p-3 border-b border-gray-200 font-medium text-gray-700">Telefone</th>
-              <th class="p-3 border-b border-gray-200 font-medium text-gray-700">Morada</th>
-              <th class="p-3 border-b border-gray-200 font-medium text-gray-700 text-center">Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="client in clients.data" :key="client.id" class="hover:bg-gray-50">
-              <td class="p-3 border-b border-gray-200">{{ client.name }}</td>
-              <td class="p-3 border-b border-gray-200">{{ client.email }}</td>
-              <td class="p-3 border-b border-gray-200">{{ client.phone ?? '-' }}</td>
-              <td class="p-3 border-b border-gray-200 max-w-xs truncate" :title="client.address">
-                {{ client.address ?? '-' }}
-              </td>
-              <td class="p-3 border-b border-gray-200 text-center space-x-2">
+            <!-- Cabeçalho + Botão de criar -->
+            <div class="flex items-center justify-between">
+                <h1 class="text-2xl font-semibold text-gray-800">Clientes</h1>
                 <Link
-                  :href="route('clients.show', client.id)"
-                  class="text-blue-600 hover:text-blue-800 text-xs font-semibold"
+                    :href="route('clients.create')"
+                    class="inline-flex items-center px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white text-sm font-semibold rounded shadow"
                 >
-                  Ver
+                    + Novo Cliente
                 </Link>
-              </td>
-            </tr>
-            <tr v-if="clients.data.length === 0">
-              <td colspan="5" class="p-3 text-center text-gray-500">Nenhum cliente encontrado.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+            </div>
 
-      <!-- Paginação -->
-      <div class="mt-6 flex justify-center space-x-4 text-sm">
-        <button
-          :disabled="!clients.prev_page_url"
-          @click="$inertia.visit(clients.prev_page_url, { preserveState: true })"
-          class="px-3 py-1 rounded border border-gray-300 text-gray-600 disabled:opacity-50"
-        >
-          &laquo; Anterior
-        </button>
+            <!-- Filtros Avançados -->
+            <div class="bg-white rounded-lg p-4 shadow">
+                <h2 class="text-lg font-medium text-gray-700 mb-3">
+                    Filtros Avançados
+                </h2>
+                <div
+                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                >
+                    <div>
+                        <label
+                            class="block text-xs font-medium text-gray-600 mb-1"
+                        >
+                            Data de Criação (Início)
+                        </label>
+                        <input
+                            type="date"
+                            v-model="filters.start_date"
+                            class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
+                        />
+                    </div>
+                    <div>
+                        <label
+                            class="block text-xs font-medium text-gray-600 mb-1"
+                        >
+                            Data de Criação (Fim)
+                        </label>
+                        <input
+                            type="date"
+                            v-model="filters.end_date"
+                            class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
+                        />
+                    </div>
 
-        <span class="px-3 py-1 font-semibold border border-gray-300 rounded bg-gray-100">
-          Página {{ clients.current_page }} de {{ clients.last_page }}
-        </span>
+                    <div class="md:col-span-2 lg:col-span-1">
+                        <label
+                            class="block text-xs font-medium text-gray-600 mb-1"
+                        >
+                            Buscar por Nome ou E-mail
+                        </label>
+                        <input
+                            type="text"
+                            v-model="filters.search_text"
+                            placeholder="Digite nome ou e-mail"
+                            class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
+                        />
+                    </div>
 
-        <button
-          :disabled="!clients.next_page_url"
-          @click="$inertia.visit(clients.next_page_url, { preserveState: true })"
-          class="px-3 py-1 rounded border border-gray-300 text-gray-600 disabled:opacity-50"
-        >
-          Próximo &raquo;
-        </button>
-      </div>
+                    <div class="flex flex-col">
+                        <span
+                            class="block text-xs font-medium text-gray-600 mb-1"
+                            >Status</span
+                        >
+                        <div class="flex items-center space-x-4">
+                            <label class="inline-flex items-center">
+                                <input
+                                    type="checkbox"
+                                    v-model="filters.status_active"
+                                    class="form-checkbox h-4 w-4 text-pink-600"
+                                />
+                                <span class="ml-2 text-sm text-gray-700"
+                                    >Ativo</span
+                                >
+                            </label>
+                            <label class="inline-flex items-center">
+                                <input
+                                    type="checkbox"
+                                    v-model="filters.status_inactive"
+                                    class="form-checkbox h-4 w-4 text-pink-600"
+                                />
+                                <span class="ml-2 text-sm text-gray-700"
+                                    >Inativo</span
+                                >
+                            </label>
+                        </div>
+                    </div>
 
-    </div>
-  </AuthenticatedLayout>
+                    <div>
+                        <label
+                            class="block text-xs font-medium text-gray-600 mb-1"
+                            >Responsável</label
+                        >
+                        <select
+                            v-model="filters.manager_id"
+                            class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
+                        >
+                            <option value="">Todos</option>
+                            <option
+                                v-for="mgr in managers"
+                                :key="mgr.id"
+                                :value="mgr.id"
+                            >
+                                {{ mgr.name }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-xs font-medium text-gray-600 mb-1"
+                            >Região</label
+                        >
+                        <select
+                            v-model="filters.region_id"
+                            @change="onRegionChange"
+                            class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
+                        >
+                            <option value="">Todas</option>
+                            <option
+                                v-for="reg in regions"
+                                :key="reg.id"
+                                :value="reg.id"
+                            >
+                                {{ reg.name }}
+                            </option>
+                        </select>
+                    </div>
+                    <div>
+                        <label
+                            class="block text-xs font-medium text-gray-600 mb-1"
+                            >Sub-região</label
+                        >
+                        <select
+                            v-model="filters.subregion_id"
+                            :disabled="subregionsForSelectedRegion.length === 0"
+                            class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 disabled:opacity-50"
+                        >
+                            <option value="">Todas</option>
+                            <option
+                                v-for="sub in subregionsForSelectedRegion"
+                                :key="sub.id"
+                                :value="sub.id"
+                            >
+                                {{ sub.name }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="flex flex-col">
+                        <span
+                            class="block text-xs font-medium text-gray-600 mb-1"
+                            >Ordenar por</span
+                        >
+                        <div class="flex items-center space-x-4">
+                            <label class="inline-flex items-center">
+                                <input
+                                    type="radio"
+                                    v-model="filters.sort_by"
+                                    value="name_asc"
+                                    class="form-radio h-4 w-4 text-pink-600"
+                                />
+                                <span class="ml-2 text-sm text-gray-700"
+                                    >Nome ↑</span
+                                >
+                            </label>
+                            <label class="inline-flex items-center">
+                                <input
+                                    type="radio"
+                                    v-model="filters.sort_by"
+                                    value="name_desc"
+                                    class="form-radio h-4 w-4 text-pink-600"
+                                />
+                                <span class="ml-2 text-sm text-gray-700"
+                                    >Nome ↓</span
+                                >
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end space-x-2 mt-4">
+                    <button
+                        @click="resetFilters"
+                        class="px-2 py-1 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium rounded"
+                        type="button"
+                    >
+                        Limpar
+                    </button>
+                    <button
+                        @click="applyFilters"
+                        class="px-2 py-1 bg-pink-600 hover:bg-pink-700 text-white text-sm font-medium rounded"
+                        type="button"
+                    >
+                        Aplicar
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-white shadow rounded-lg overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 text-xs">
+                        <thead class="bg-gray-50">
+                            <tr class="text-left">
+                                <th
+                                    v-for="col in columns"
+                                    :key="col.field"
+                                    class="px-2 py-2 font-medium text-gray-600 uppercase cursor-pointer select-none"
+                                    @click="sortBy(col.field)"
+                                >
+                                    {{ col.label }}
+                                    <span class="ml-1 text-gray-400">▲▼</span>
+                                </th>
+                                <th
+                                    class="px-2 py-2 font-medium text-gray-600 uppercase text-center"
+                                >
+                                    Ações
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            <tr
+                                v-for="client in $page.props.clients"
+                                :key="client.id"
+                                class="hover:bg-gray-50"
+                            >
+                                <td
+                                    v-for="col in columns"
+                                    :key="col.field"
+                                    class="px-2 py-2 text-gray-700"
+                                >
+                                    {{ getColumnValue(client, col.field) }}
+                                </td>
+                                <td class="px-2 py-2 text-center space-x-1">
+                                    <Link
+                                        :href="route('clients.show', client.id)"
+                                        class="px-1 py-1 bg-blue-500 hover:bg-blue-600 text-white text-[10px] rounded"
+                                    >
+                                        Ver
+                                    </Link>
+                                    <button
+                                        @click="confirmDelete(client.id)"
+                                        class="px-1 py-1 bg-red-500 hover:bg-red-600 text-white text-[10px] rounded"
+                                    >
+                                        Excluir
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr v-if="$page.props.clients.length === 0">
+                                <td
+                                    colspan="6"
+                                    class="px-2 py-4 text-center text-gray-500"
+                                >
+                                    Nenhum cliente encontrado.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </AuthenticatedLayout>
 </template>
+
 <script setup>
-import { reactive } from 'vue'
-import { Link, Head, usePage } from '@inertiajs/inertia-vue3'
-import { Inertia } from '@inertiajs/inertia'
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
+import { reactive, computed } from "vue";
+import { Head, Link, usePage } from "@inertiajs/inertia-vue3";
+import { Inertia } from "@inertiajs/inertia";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 
-const { clients, filters } = usePage().props.value
+const columns = [
+    { label: "Nome", field: "name" },
+    { label: "E‐mail", field: "email" },
+    { label: "Telefone", field: "phone" },
+    { label: "Morada", field: "address" },
+    { label: "NIF", field: "nif" },
+];
 
-const filtersReactive = reactive({
-  name: filters?.name || '',
-  email: filters?.email || '',
-  phone: filters?.phone || '',
-  address: filters?.address || '',
-})
+const managers = reactive([
+    { id: 1, name: "Maria Silva" },
+    { id: 2, name: "João Santos" },
+    { id: 3, name: "Ana Costa" },
+]);
+const regions = reactive([
+    { id: 1, name: "Norte" },
+    { id: 2, name: "Centro" },
+    { id: 3, name: "Sul" },
+]);
+const subregions = reactive({
+    1: [
+        { id: 11, name: "Porto" },
+        { id: 12, name: "Braga" },
+    ],
+    2: [
+        { id: 21, name: "Coimbra" },
+        { id: 22, name: "Aveiro" },
+    ],
+    3: [
+        { id: 31, name: "Faro" },
+        { id: 32, name: "Setúbal" },
+    ],
+});
+
+const filters = reactive({
+    start_date: "",
+    end_date: "",
+    search_text: "",
+    status_active: false,
+    status_inactive: false,
+    manager_id: "",
+    region_id: "",
+    subregion_id: "",
+});
+
+const subregionsForSelectedRegion = computed(() => {
+    return filters.region_id ? subregions[filters.region_id] || [] : [];
+});
+
+const currentSort = reactive({
+    field: "",
+    direction: "",
+});
+
+function getColumnValue(client, field) {
+    if (field === "phone") {
+        return client.addresses?.[0]?.phone ?? "—";
+    }
+    if (field === "address") {
+        return client.addresses?.[0]?.address ?? "—";
+    }
+    return client[field] ?? "—";
+}
+
+function sortBy(field) {
+    if (currentSort.field === field) {
+        currentSort.direction =
+            currentSort.direction === "asc" ? "desc" : "asc";
+    } else {
+        currentSort.field = field;
+        currentSort.direction = "asc";
+    }
+
+    Inertia.get(
+        route("clients.index"),
+        {
+            ...filters,
+            sort_field: currentSort.field,
+            sort_dir: currentSort.direction,
+        },
+        {
+            preserveState: true,
+            replace: true,
+        }
+    );
+}
+
+const page = usePage();
 
 function applyFilters() {
-  Inertia.get(route('clients.index'), filtersReactive, { preserveState: true, replace: true })
+    Inertia.get(
+        route("clients.index"),
+        {
+            ...filters,
+            sort_field: currentSort.field,
+            sort_dir: currentSort.direction,
+        },
+        {
+            preserveState: true,
+            replace: true,
+        }
+    );
 }
 
 function resetFilters() {
-  filtersReactive.name = ''
-  filtersReactive.email = ''
-  filtersReactive.phone = ''
-  filtersReactive.address = ''
-  Inertia.get(route('clients.index'), {}, { preserveState: true, replace: true })
+    filters.start_date = "";
+    filters.end_date = "";
+    filters.search_text = "";
+    filters.status_active = false;
+    filters.status_inactive = false;
+    filters.manager_id = "";
+    filters.region_id = "";
+    filters.subregion_id = "";
+    currentSort.field = "";
+    currentSort.direction = "";
+
+    Inertia.get(
+        route("clients.index"),
+        {},
+        {
+            preserveState: true,
+            replace: true,
+        }
+    );
+}
+
+function onRegionChange() {
+    filters.subregion_id = "";
+}
+
+function confirmDelete(id) {
+  if (window.confirm('Tem certeza que deseja deletar este cliente?')) {
+    Inertia.delete(route('clients.destroy', id))
+  }
 }
 </script>

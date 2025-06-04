@@ -42,7 +42,7 @@ class ClientController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\Response
      */
- public function store(Request $request)
+public function store(Request $request)
 {
     try {
         DB::beginTransaction();
@@ -51,74 +51,78 @@ class ClientController extends Controller
 
         $user = auth()->user();
 
-        // Validação dos dados
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-                'nif' => 'nullable|string|max:9',
-            'url' => 'nullable|url',
-            'clientable_type' => 'nullable|string|max:255',
-            'clientable_id' => 'nullable|integer',
-            'address_type_id' => 'required|exists:crm_address_types,id',  
-            'address' => 'required|string|max:255',
-            'contact' => 'nullable|string|max:255',
-            'phone' => 'nullable|string|max:20',
-            'line1' => 'nullable|string|max:255',
-            'line2' => 'nullable|string|max:255',
-            'line3' => 'nullable|string|max:255',
-            'code' => 'nullable|string|max:50',
-            'city' => 'nullable|string|max:100',
-            'state' => 'nullable|string|max:100',
-            'country' => 'nullable|string|max:100',
-              'client_group_id'       => 'nullable|exists:client_groups,id',         
-            'group_subdivision_id'  => 'nullable|exists:group_subdivisions,id',  
+        // 1) Validação dos dados básicos do cliente
+        $validatedClient = $request->validate([
+            'name'                  => 'required|string|max:255',
+            'nif'                   => 'nullable|string|max:9',
+            'url'                   => 'nullable|url',
+            'clientable_type'       => 'nullable|string|max:255',
+            'clientable_id'         => 'nullable|integer',
+            'client_group_id'       => 'nullable|exists:client_groups,id',
+            'group_subdivision_id'  => 'nullable|exists:group_subdivisions,id',
         ]);
 
-        // 1. Cria o cliente primeiro
+        // 2) Validação do array de endereços (pelo menos um)
+        $validatedAddresses = $request->validate([
+            'addresses'                           => 'required|array|min:1',
+            'addresses.*.address_type_id'         => 'required|exists:crm_address_types,id',
+            'addresses.*.address'                 => 'required|string|max:255',
+            'addresses.*.name'                    => 'nullable|string|max:255',
+            'addresses.*.contact'                 => 'nullable|string|max:255',
+            'addresses.*.phone'                   => 'nullable|string|max:20',
+            'addresses.*.line1'                   => 'nullable|string|max:255',
+            'addresses.*.line2'                   => 'nullable|string|max:255',
+            'addresses.*.line3'                   => 'nullable|string|max:255',
+            'addresses.*.code'                    => 'nullable|string|max:50',
+            'addresses.*.city'                    => 'nullable|string|max:100',
+            'addresses.*.state'                   => 'nullable|string|max:100',
+            'addresses.*.country'                 => 'nullable|string|max:100',
+            'addresses.*.primary'                 => 'sometimes|in:0,1',
+        ]);
+
+        // 3) Cria o cliente primeiro
         $client = Client::create([
-            'name' => $validated['name'],
-                'nif' => $validated['nif'] ?? null,
-            'url' => $validated['url'] ?? null,
-            'clientable_type' => $validated['clientable_type'] ?? null,
-            'clientable_id' => $validated['clientable_id'] ?? null,
-            'user_created_id' => $user->id,
-            'user_updated_id' => $user->id,
-    'client_group_id' => $validated['client_group_id'] ?? null,
-            'group_subdivision_id'  => $validated['group_subdivision_id'] ?? null,
-
+            'name'                  => $validatedClient['name'],
+            'nif'                   => $validatedClient['nif'] ?? null,
+            'url'                   => $validatedClient['url'] ?? null,
+            'clientable_type'       => $validatedClient['clientable_type'] ?? null,
+            'clientable_id'         => $validatedClient['clientable_id'] ?? null,
+            'client_group_id'       => $validatedClient['client_group_id'] ?? null,
+            'group_subdivision_id'  => $validatedClient['group_subdivision_id'] ?? null,
+            'user_created_id'       => $user->id,
+            'user_updated_id'       => $user->id,
         ]);
 
-        // 2. Cria o endereço associado ao cliente
-        $address = CrmAddress::create([
-            'address_type_id' => $validated['address_type_id'],
-            'address' => $validated['address'],
-            'name' => $validated['name'],  // geralmente o nome do cliente ou da empresa
-            'contact' => $validated['contact'] ?? null,
-            'phone' => $validated['phone'] ?? null,
-            'line1' => $validated['line1'] ?? null,
-            'line2' => $validated['line2'] ?? null,
-            'line3' => $validated['line3'] ?? null,
-            'code' => $validated['code'] ?? null,
-            'city' => $validated['city'] ?? null,
-            'state' => $validated['state'] ?? null,
-            'country' => $validated['country'] ?? null,
-            'addressable_type' => Client::class,      // Indica que esse endereço pertence a um cliente
-            'addressable_id' => $client->id,           // ID do cliente criado
-            'user_created_id' => $user->id,
-            'user_updated_id' => $user->id,
-        ]);
-
-        // 3. Atualiza o cliente com o endereço criado, se desejar (opcional)
-        $client->crm_addresses_id = $address->id;
-        $client->save();
+        // 4) Cria cada endereço associado ao cliente
+        foreach ($validatedAddresses['addresses'] as $addrData) {
+            $client->addresses()->create([
+                'address_type_id'  => $addrData['address_type_id'],
+                'address'          => $addrData['address'],
+                'name'             => $addrData['name']    ?? null,
+                'contact'          => $addrData['contact'] ?? null,
+                'phone'            => $addrData['phone']   ?? null,
+                'line1'            => $addrData['line1']   ?? null,
+                'line2'            => $addrData['line2']   ?? null,
+                'line3'            => $addrData['line3']   ?? null,
+                'code'             => $addrData['code']    ?? null,
+                'city'             => $addrData['city']    ?? null,
+                'state'            => $addrData['state']   ?? null,
+                'country'          => $addrData['country'] ?? null,
+                'primary'          => $addrData['primary'] ?? 0,
+                'addressable_type' => Client::class,
+                'addressable_id'   => $client->id,
+                'user_created_id'  => $user->id,
+                'user_updated_id'  => $user->id,
+            ]);
+        }
 
         DB::commit();
 
         Log::info('Cliente criado com sucesso:', ['client_id' => $client->id]);
 
         return response()->json([
-            'message' => 'Cliente criado com sucesso!',
-            'client' => $client,
-            'address' => $address,
+            'message' => 'Cliente e endereços criados com sucesso!',
+            'client'  => $client->load('addresses'),
         ], 201);
 
     } catch (\Exception $e) {
@@ -127,57 +131,109 @@ class ClientController extends Controller
         return response()->json(['error' => 'Erro ao criar cliente'], 500);
     }
 }
+
     /**
      * Exibe a lista paginada de clientes.
      *
      * @param Request $request
      * @return \Illuminate\Http\Response
      */
-   public function index(Request $request)
+//criar index pra exibir os clientes na pagina
+
+    /**
+     * Exibe todos os clientes (index).
+     * Faz log do número de registros e dos IDs encontrados.
+     */
+    public function index(Request $request)
     {
-        $query = Client::query();
+        // Se você tiver policy, pode manter esta linha; senão, comente ou remova:
+        $this->authorize('viewAny', Client::class);
 
-        // Aplicar filtros se vierem no request
-        if ($request->filled('name')) {
-            $query->where('name', 'like', "%{$request->name}%");
-        }
-        if ($request->filled('email')) {
-            // Supondo que você tenha coluna 'email' ou relação para buscar email de contato
-            $query->where('email', 'like', "%{$request->email}%");
-        }
-        if ($request->filled('phone')) {
-            // Se ‘phone’ estiver armazenado diretamente em crm_clients, use:
-            $query->where('phone', 'like', "%{$request->phone}%");
-            // Caso o telefone venha de crm_addresses, seria preciso um join ou relacionamento.
-        }
-        if ($request->filled('address')) {
-            $query->whereHas('addresses', function($q) use ($request) {
-                $q->where('address', 'like', "%{$request->address}%");
-            });
-        }
+        // Busca todos os clientes, carregando endereços e tipo de endereço
+        $clients = Client::with('addresses.addressType')
+                    ->orderBy('name')
+                    ->get();
 
-        // Paginação de 10 em 10 clientes (pode ajustar)
-        $clients = $query
-            ->with(['addresses' => function($q) {
-                $q->where('primary', 1);
-            }])
-            ->orderBy('name')
-            ->paginate(10)
-            ->withQueryString();
+        // Log para confirmar no storage/logs/laravel.log
+        Log::debug('DEBUG - ClientController@index: total de clientes = '.$clients->count(), [
+            'ids' => $clients->pluck('id')->toArray(),
+        ]);
 
+        // Retorna para a View Inertia, passando o Collection (array) de clientes
         return Inertia::render('Clients/Index', [
             'clients' => $clients,
-            'filters' => $request->only(['name', 'email', 'phone', 'address']),
         ]);
     }
 
-  public function show($id)
+    /**
+     * Exibe os detalhes de um cliente específico pelo ID.
+     * Faz log do ID solicitado.
+     */
+public function show($id)
     {
-        $client = Client::with('addresses.addressType')->findOrFail($id);
+        // Carrega o cliente, junto com endereços (e tipo) + grupo + subdivisão
+        $client = Client::with([
+            'addresses.addressType',
+            'clientGroup',
+            'groupSubdivision',
+        ])->findOrFail($id);
+
+        Log::debug("DEBUG - ClientController@show: buscando cliente ID = {$id}", [
+            'cliente_encontrado' => $client->only(['id','name','email']),
+        ]);
 
         return Inertia::render('Clients/Show', [
             'client' => $client,
         ]);
     }
+
+
+    public function destroy($id)
+    {
+        $client = Client::findOrFail($id);
+        Log::debug("DEBUG - ClientController@destroy: removendo cliente de ID = {$id}", [
+            'cliente_encontrado' => $client->only(['id', 'name', 'email']),
+        ]);
+        // Remove o cliente
+        $client->delete();
+
+        return redirect()->route('clients.index')->with('success', 'Cliente excluído com sucesso!');
+    }
+
+    /**
+     * Exibe a tela de edição de cliente.
+     *
+     * @param int $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
+    {
+        // Busca o cliente pelo ID ou lança 404 se não existir
+        $client = Client::with('addresses.addressType')->findOrFail($id);
+
+        // Log para confirmar no storage/logs/laravel.log
+        Log::debug("DEBUG - ClientController@edit: editando cliente de ID = {$id}", [
+            'cliente_encontrado' => $client->only(['id', 'name', 'email']),
+        ]);
+
+        // Retorna a view via Inertia
+        return Inertia::render('Clients/Edit', [
+            'client' => $client,
+        ]);
+
+    }
+    //exibir  detalhes do cliente
+  public function details($id)
+{
+    $client = Client::with('addresses.addressType')->findOrFail($id);
+
+    Log::debug("DEBUG - ClientController@details: detalhes do cliente de ID = {$id}", [
+        'cliente_encontrado' => $client->only(['id', 'name', 'email']),
+    ]);
+
+    return Inertia::render('Clients/Details', [
+        'client' => $client,
+    ]);
+}
 
 }

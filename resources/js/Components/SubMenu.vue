@@ -89,7 +89,14 @@ function toggleSubmenu() {
 </Link>
 
   </li>
+  <!-- Link para criar um cliente, disponível para admins ou superadmins -->
+  <li v-if="isAdmin || isSuperadmin" class="flex items-center px-4 py-2 hover:bg-gray-200 cursor-pointer">
+   <Link :href="route('clients.create')" class="...">
+  <FontAwesomeIcon :icon="faSearch" class="w-4 h-4" />
+  <span class="ml-3 text-sm">Pesquisar clientes</span>
+</Link>
 
+  </li>
 
 </template>
 
