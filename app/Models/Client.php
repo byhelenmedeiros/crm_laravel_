@@ -10,26 +10,39 @@ class Client extends Model
     use HasFactory;
 
     protected $table = 'crm_clients';
-  protected $fillable = [
-        //'external_id',
-        'clientable_type',
-        'clientable_id',
-        'name',
-        'nif',
-        'client_group_id',
-        'group_subdivision_id',
-        'address_type_id',
-        'address',
-        'crm_addresses_id',
-        'user_created_id',
-        'user_updated_id',
-        'user_deleted_id',
-        'user_restored_id',
-        'user_owner_id',
-        'user_assigned_id',
-        'url',
-    ];
-
+protected $fillable = [
+   // 'external_id',           // número do cliente
+    'clientable_type',
+    'clientable_id',
+    'name',
+    'nif',
+    'client_group_id',
+    'group_subdivision_id',
+    'address_type_id',
+    'address',
+    'crm_addresses_id',
+    'user_created_id',
+    'user_updated_id',
+    'user_deleted_id',
+    'user_restored_id',
+    'user_owner_id',
+    'user_assigned_id',
+    'url',
+    'localidade',            
+    'zone_id',
+    'vendor_id',
+    'transporte_id',         
+    'pagamento_id',          
+    'preco_id',              
+    'desconto_linha',        
+    'desconto_global',       
+    'telefone1',             
+    'telefone2',             
+    'telefone3',             
+    'telefone4',             
+    'movel1',                
+    'movel2',                
+];
 
     /**
      * Relacionamento com a tabela crm_addresses
@@ -105,6 +118,14 @@ public function primaryAddress()
 {
     return $this->addresses()->where('primary', 1)->first();
 }
+   public function zone()
+    {
+        return $this->belongsTo(Zone::class);
+    }
+     public function vendor()
+    {
+        return $this->belongsTo(Vendor::class);
+    }
 
 }
 

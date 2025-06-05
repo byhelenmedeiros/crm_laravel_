@@ -1,7 +1,7 @@
 <template>
     <Head title="Lista de Clientes" />
     <AuthenticatedLayout>
-        <div class="mx-auto p-4 max-w-7xl space-y-6">
+        <div class="mx-auto p-4  space-y-6">
             <!-- Breadcrumb -->
             <nav class="text-gray-500 text-sm mb-2" aria-label="Breadcrumb">
                 <ol class="inline-flex space-x-1">
@@ -17,20 +17,18 @@
 
             <!-- Cabeçalho + Botão de criar -->
             <div class="flex items-center justify-between">
-                <h1 class="text-2xl font-semibold text-gray-800">Clientes</h1>
+                <h1 class="text-2xl font-semibold text-gray-800">Buscar Clientes</h1>
                 <Link
                     :href="route('clients.create')"
-                    class="inline-flex items-center px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white text-sm font-semibold rounded shadow"
+                    class="inline-flex items-center px-2 py-1 bg-pink-600 hover:bg-pink-700 text-white text-sm font-semibold "
                 >
                     + Novo Cliente
                 </Link>
             </div>
 
             <!-- Filtros Avançados -->
-            <div class="bg-white rounded-lg p-4 shadow">
-                <h2 class="text-lg font-medium text-gray-700 mb-3">
-                    Filtros Avançados
-                </h2>
+            <div class="bg-white">
+               
                 <div
                     class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
                 >
@@ -73,35 +71,7 @@
                         />
                     </div>
 
-                    <div class="flex flex-col">
-                        <span
-                            class="block text-xs font-medium text-gray-600 mb-1"
-                            >Status</span
-                        >
-                        <div class="flex items-center space-x-4">
-                            <label class="inline-flex items-center">
-                                <input
-                                    type="checkbox"
-                                    v-model="filters.status_active"
-                                    class="form-checkbox h-4 w-4 text-pink-600"
-                                />
-                                <span class="ml-2 text-sm text-gray-700"
-                                    >Ativo</span
-                                >
-                            </label>
-                            <label class="inline-flex items-center">
-                                <input
-                                    type="checkbox"
-                                    v-model="filters.status_inactive"
-                                    class="form-checkbox h-4 w-4 text-pink-600"
-                                />
-                                <span class="ml-2 text-sm text-gray-700"
-                                    >Inativo</span
-                                >
-                            </label>
-                        </div>
-                    </div>
-
+            
                     <div>
                         <label
                             class="block text-xs font-medium text-gray-600 mb-1"
@@ -145,7 +115,7 @@
                     <div>
                         <label
                             class="block text-xs font-medium text-gray-600 mb-1"
-                            >Sub-região</label
+                            >Agrupamento</label
                         >
                         <select
                             v-model="filters.subregion_id"
@@ -286,10 +256,11 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 
 const columns = [
     { label: "Nome", field: "name" },
-    { label: "E‐mail", field: "email" },
+        { label: "NIF", field: "nif" },
+    { label: "Número do Cliente", field: "external_id" },
     { label: "Telefone", field: "phone" },
     { label: "Morada", field: "address" },
-    { label: "NIF", field: "nif" },
+
 ];
 
 const managers = reactive([
@@ -307,14 +278,7 @@ const subregions = reactive({
         { id: 11, name: "Porto" },
         { id: 12, name: "Braga" },
     ],
-    2: [
-        { id: 21, name: "Coimbra" },
-        { id: 22, name: "Aveiro" },
-    ],
-    3: [
-        { id: 31, name: "Faro" },
-        { id: 32, name: "Setúbal" },
-    ],
+    
 });
 
 const filters = reactive({

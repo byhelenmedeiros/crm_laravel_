@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Client;
 use App\Models\ClientGroup;
 use App\Models\CrmAddress;
+use App\Models\Zone;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use App\Models\CrmAddressType;
+use App\Models\Vendor;  
 
 
 class ClientController extends Controller
@@ -27,12 +29,18 @@ class ClientController extends Controller
         $this->authorize('create', Client::class);
         $addressTypes = CrmAddressType::all(['id', 'name']);
     $clientGroups = ClientGroup::orderBy('id')->get();
+      $zones = Zone::orderBy('external_id')->get(['id', 'external_id', 'name']);
+        $vendors = Vendor::orderBy('external_id')->get(['id', 'external_id', 'name']);
+        // Log para confirmar no storage/logs/laravel.log
+        Log::info('ClientController@create carregando tipos de endereço:', $addressTypes->toArray());
 
         Log::info('Tipos de endereço carregados:', $addressTypes->toArray());        
         // Retorna a view via Inertia
            return Inertia::render('Clients/Create', [
         'addressTypes' => $addressTypes,
         'clientGroups' => $clientGroups,
+          'zones'   => $zones,
+            'vendors' => $vendors,
     ]);
     }
 
@@ -60,6 +68,8 @@ public function store(Request $request)
             'clientable_id'         => 'nullable|integer',
             'client_group_id'       => 'nullable|exists:client_groups,id',
             'group_subdivision_id'  => 'nullable|exists:group_subdivisions,id',
+             'zone_id'   => 'nullable|exists:zones,id',
+            'vendor_id' => 'nullable|exists:vendors,id',
         ]);
 
         // 2) Validação do array de endereços (pelo menos um)
@@ -138,7 +148,6 @@ public function store(Request $request)
      * @param Request $request
      * @return \Illuminate\Http\Response
      */
-//criar index pra exibir os clientes na pagina
 
     /**
      * Exibe todos os clientes (index).
@@ -159,7 +168,6 @@ public function store(Request $request)
             'ids' => $clients->pluck('id')->toArray(),
         ]);
 
-        // Retorna para a View Inertia, passando o Collection (array) de clientes
         return Inertia::render('Clients/Index', [
             'clients' => $clients,
         ]);
@@ -210,6 +218,8 @@ public function show($id)
     {
         // Busca o cliente pelo ID ou lança 404 se não existir
         $client = Client::with('addresses.addressType')->findOrFail($id);
+         $zones = Zone::orderBy('external_id')->get(['id', 'external_id', 'name']);
+        $vendors = Vendor::orderBy('external_id')->get(['id', 'external_id', 'name']);
 
         // Log para confirmar no storage/logs/laravel.log
         Log::debug("DEBUG - ClientController@edit: editando cliente de ID = {$id}", [
@@ -218,7 +228,9 @@ public function show($id)
 
         // Retorna a view via Inertia
         return Inertia::render('Clients/Edit', [
-            'client' => $client,
+            'client'  => $client->load(['zone', 'vendor']),
+            'zones'   => $zones,
+            'vendors' => $vendors,
         ]);
 
     }
