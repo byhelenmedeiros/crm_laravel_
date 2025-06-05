@@ -18,6 +18,14 @@
                     Dados do Cliente
                 </button>
                 <button
+                    @click="activeTab = 'dadoscomplementares'"
+                    :class="tabClass('dadoscomplementares')"
+                    class="px-4 py-2 text-sm font-semibold"
+                    type="button"
+                >
+                    Dados Complementares
+                </button>
+                <button
                     @click="activeTab = 'zonevendor'"
                     :class="tabClass('zonevendor')"
                     class="px-4 py-2 text-sm font-semibold"
@@ -25,6 +33,7 @@
                 >
                     Zona & Vendedor
                 </button>
+
                 <button
                     @click="activeTab = 'morada'"
                     :class="tabClass('morada')"
@@ -47,6 +56,26 @@
                 <!-- === Seção: Dados do Cliente === -->
                 <section v-if="activeTab === 'cliente'">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- (mantém exatamente igual ao original) -->
+                        <div>
+                            <label
+                                for="external_id"
+                                class="block text-gray-700 mb-1 text-sm font-medium"
+                                >Numero do cliente</label
+                            >
+                            <input
+                                id="external_id"
+                                type="text"
+                                v-model="form.external_id"
+                                class="w-full border border-gray-300 rounded px-2 py-2 text-sm focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                            />
+                            <p
+                                v-if="form.errors.external_id"
+                                class="mt-1 text-xs text-red-600"
+                            >
+                                {{ form.errors.external_id }}
+                            </p>
+                        </div>
                         <div>
                             <label
                                 for="name"
@@ -67,6 +96,7 @@
                                 {{ form.errors.name }}
                             </p>
                         </div>
+
                         <div>
                             <label
                                 for="nif"
@@ -147,13 +177,6 @@
                                 {{ form.errors.pagamento_id }}
                             </p>
                         </div>
-                        <!-- incluir campos do - Preços (Lista SAGE)
-- Desconto Linha (Lista SAGE – Numérico duas casas decimais)
-- Desconto Global (Lista SAGE – Numérico duas casas decimais)
-- Telefone 1, 2,3 e 4
-- Móvel 1 e 2
- iserir todos em dados do cliente 
--->
                         <div>
                             <label
                                 for="preco_id"
@@ -216,7 +239,6 @@
                                 {{ form.errors.desconto_global }}
                             </p>
                         </div>
-
                         <div>
                             <label
                                 for="telefone1"
@@ -339,12 +361,196 @@
                         </div>
                     </div>
                 </section>
+                <!-- === Seção: Dados Complementares === -->
+              <section v-if="activeTab === 'dadoscomplementares'">
+  <div class="grid grid-cols-1 gap-4">
+    <!-- Nome do Responsável -->
+    <div>
+      <label for="responsavel_nome" class="block text-gray-700 mb-1 text-sm font-medium">
+        Nome do Responsável
+      </label>
+      <input
+        id="responsavel_nome"
+        type="text"
+        v-model="form.responsavel_nome"
+        class="w-full border border-gray-300 rounded px-2 py-2 text-sm focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+      />
+      <p v-if="form.errors.responsavel_nome" class="mt-1 text-xs text-red-600">
+        {{ form.errors.responsavel_nome }}
+      </p>
+    </div>
+
+    <!-- Cinco colunas: orçamentos, encomendas, faturas, campanhas, aniversário -->
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div>
+        <label for="recebe_email_orcamentos" class="block text-gray-700 mb-1 text-sm font-medium">
+          Recebe Orçamentos
+        </label>
+        <select
+          id="recebe_email_orcamentos"
+          v-model="form.recebe_email_orcamentos"
+          class="w-full border border-gray-300 rounded px-2 py-2 text-sm focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+        >
+          <option value="1">Sim</option>
+          <option value="0">Não</option>
+        </select>
+        <p v-if="form.errors.recebe_email_orcamentos" class="mt-1 text-xs text-red-600">
+          {{ form.errors.recebe_email_orcamentos }}
+        </p>
+      </div>
+
+      <div>
+        <label for="recebe_email_encomendas" class="block text-gray-700 mb-1 text-sm font-medium">
+          Recebe Encomendas
+        </label>
+        <select
+          id="recebe_email_encomendas"
+          v-model="form.recebe_email_encomendas"
+          class="w-full border border-gray-300 rounded px-2 py-2 text-sm focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+        >
+          <option value="1">Sim</option>
+          <option value="0">Não</option>
+        </select>
+        <p v-if="form.errors.recebe_email_encomendas" class="mt-1 text-xs text-red-600">
+          {{ form.errors.recebe_email_encomendas }}
+        </p>
+      </div>
+
+      <div>
+        <label for="recebe_email_faturas" class="block text-gray-700 mb-1 text-sm font-medium">
+          Recebe Faturas
+        </label>
+        <select
+          id="recebe_email_faturas"
+          v-model="form.recebe_email_faturas"
+          class="w-full border border-gray-300 rounded px-2 py-2 text-sm focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+        >
+          <option value="1">Sim</option>
+          <option value="0">Não</option>
+        </select>
+        <p v-if="form.errors.recebe_email_faturas" class="mt-1 text-xs text-red-600">
+          {{ form.errors.recebe_email_faturas }}
+        </p>
+      </div>
+
+      <div>
+        <label for="recebe_email_campanhas" class="block text-gray-700 mb-1 text-sm font-medium">
+          Recebe Campanhas
+        </label>
+        <select
+          id="recebe_email_campanhas"
+          v-model="form.recebe_email_campanhas"
+          class="w-full border border-gray-300 rounded px-2 py-2 text-sm focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+        >
+          <option value="1">Sim</option>
+          <option value="0">Não</option>
+        </select>
+        <p v-if="form.errors.recebe_email_campanhas" class="mt-1 text-xs text-red-600">
+          {{ form.errors.recebe_email_campanhas }}
+        </p>
+      </div>
+
+      <div>
+        <label for="data_aniversario" class="block text-gray-700 mb-1 text-sm font-medium">
+          Data Aniversário
+        </label>
+        <input
+          id="data_aniversario"
+          type="date"
+          v-model="form.data_aniversario"
+          class="w-full border border-gray-300 rounded px-2 py-2 text-sm focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+        />
+        <p v-if="form.errors.data_aniversario" class="mt-1 text-xs text-red-600">
+          {{ form.errors.data_aniversario }}
+        </p>
+      </div>
+  
+  </div>
+ <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div>
+    <label class="block text-gray-700 mb-1 text-sm font-medium">
+      Cores do Clube (até 3, separadas por vírgula)
+    </label>
+    <input
+      v-model="colorsInput"
+      type="text"
+      placeholder="Ex.: vermelho, azul, verde"
+      class="w-full border border-gray-300 rounded px-2 py-2 text-sm focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+    />
+    <p v-if="colorError" class="mt-1 text-xs text-red-600">
+      {{ colorError }}
+    </p>
+  </div>
+
+</div>
+
+<!-- Três campos na linha abaixo: Padrão, Cliente desde, Limite de Crédito -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+  <div>
+    <label class="block text-gray-700 mb-1 text-sm font-medium">
+      Padrão
+    </label>
+    <input
+      v-model="form.padrao_clube"
+      type="text"
+      class="w-full border border-gray-300 rounded px-2 py-2 text-sm focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+    />
+    <p v-if="form.errors.padrao_clube" class="mt-1 text-xs text-red-600">
+      {{ form.errors.padrao_clube }}
+    </p>
+  </div>
+
+  <div>
+    <label class="block text-gray-700 mb-1 text-sm font-medium">
+      Cliente desde
+    </label>
+    <input
+      v-model="form.cliente_desde"
+      type="date"
+      class="w-full border border-gray-300 rounded px-2 py-2 text-sm focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+    />
+    <p v-if="form.errors.cliente_desde" class="mt-1 text-xs text-red-600">
+      {{ form.errors.cliente_desde }}
+    </p>
+  </div>
+
+  <div>
+    <label class="block text-gray-700 mb-1 text-sm font-medium">
+      Limite de Crédito
+    </label>
+    <input
+      v-model="form.limite_credito"
+      type="number"
+      class="w-full border border-gray-300 rounded px-2 py-2 text-sm focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+    />
+    <p v-if="form.errors.limite_credito" class="mt-1 text-xs text-red-600">
+      {{ form.errors.limite_credito }}
+    </p>
+  </div>
+</div>
+
+<!-- Notas Gerais: ocupa largura total na linha abaixo -->
+<div class="mt-4">
+  <label class="block text-gray-700 mb-1 text-sm font-medium">
+    Notas gerais
+  </label>
+  <input
+    v-model="form.notas_gerais"
+    type="text"
+    class="w-full border border-gray-300 rounded px-2 py-2 text-sm focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+  />
+  <p v-if="form.errors.notas_gerais" class="mt-1 text-xs text-red-600">
+    {{ form.errors.notas_gerais }}
+  </p>
+</div></div>
+</section>
+
 
                 <!-- === Seção: Zona & Vendedor === -->
                 <section v-if="activeTab === 'zonevendor'">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Agora são 3 colunas no md: Zona | Zona Comercial | Vendedor -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <!-- Zona -->
-                        <!-- Exibição automática de “Zona” (prefixo → nome) -->
                         <div class="mb-4">
                             <label
                                 class="block text-sm font-medium text-gray-700 mb-1"
@@ -355,12 +561,12 @@
                                 type="text"
                                 :value="currentZona"
                                 readonly
-                                class="mt-1 block w-full border border-gray-300 bg-gray-100 rounded-md shadow-sm sm:text-sm px-2 py-2"
+                                class="mt-1 block w-full border border-gray-300 bg-gray-100 rounded-md shadow-sm sm:text-sm px-2 py-2 cursor-not-allowed"
                                 placeholder="—"
                             />
                         </div>
 
-                        <!-- Exibição automática de “Zona Comercial” (prefixo → região) -->
+                        <!-- Zona Comercial -->
                         <div class="mb-4">
                             <label
                                 class="block text-sm font-medium text-gray-700 mb-1"
@@ -371,39 +577,25 @@
                                 type="text"
                                 :value="currentZonaComercial"
                                 readonly
-                                class="mt-1 block w-full border border-gray-300 bg-gray-100 rounded-md shadow-sm sm:text-sm px-2 py-2"
+                                class="mt-1 block w-full border border-gray-300 bg-gray-100 rounded-md shadow-sm sm:text-sm px-2 py-2 cursor-not-allowed"
                                 placeholder="—"
                             />
                         </div>
-                        <!-- Vendedor -->
-                        <div>
+
+                        <!-- Vendedor (input somente‐leitura) -->
+                        <div class="mb-4">
                             <label
-                                for="vendor_id"
+                                for="vendor"
                                 class="block text-gray-700 mb-1 text-sm font-medium"
                                 >Vendedor</label
                             >
-                            <select
-                                id="vendor_id"
-                                v-model="form.vendor_id"
-                                class="w-full border border-gray-300 rounded px-2 py-2 text-sm focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
-                            >
-                                <option value="" disabled>
-                                    Selecione o vendedor
-                                </option>
-                                <option
-                                    v-for="vendor in vendors"
-                                    :key="vendor.id"
-                                    :value="vendor.id"
-                                >
-                                    {{ vendor.external_id }} – {{ vendor.name }}
-                                </option>
-                            </select>
-                            <p
-                                v-if="form.errors.vendor_id"
-                                class="mt-1 text-xs text-red-600"
-                            >
-                                {{ form.errors.vendor_id }}
-                            </p>
+                            <input
+                                id="vendor"
+                                type="text"
+                                :value="vendorDisplay"
+                                disabled
+                                class="w-full border border-gray-300 rounded px-2 py-2 text-sm bg-gray-100 cursor-not-allowed"
+                            />
                         </div>
                     </div>
                 </section>
@@ -567,6 +759,7 @@
                                             }}
                                         </p>
                                     </div>
+
                                     <div>
                                         <label
                                             class="block text-gray-700 mb-1 text-sm font-medium"
@@ -594,68 +787,11 @@
                                         />
                                     </div>
 
-                                    <!-- contact -->
-                                    <div>
-                                        <label
-                                            class="block text-gray-700 mb-1 text-sm font-medium"
-                                        >
-                                            Contacto
-                                        </label>
-                                        <input
-                                            type="text"
-                                            v-model="addr.contact"
-                                            placeholder="Pessoa de contacto"
-                                            class="w-full border border-gray-300 rounded px-2 py-2 text-sm focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
-                                        />
-                                        <p
-                                            v-if="
-                                                formErrors[
-                                                    `addresses.${index}.contact`
-                                                ]
-                                            "
-                                            class="mt-1 text-xs text-red-600"
-                                        >
-                                            {{
-                                                formErrors[
-                                                    `addresses.${index}.contact`
-                                                ]
-                                            }}
-                                        </p>
-                                    </div>
-
-                                    <!-- phone -->
-                                    <div>
-                                        <label
-                                            class="block text-gray-700 mb-1 text-sm font-medium"
-                                        >
-                                            Telefone
-                                        </label>
-                                        <input
-                                            type="text"
-                                            v-model="addr.phone"
-                                            class="w-full border border-gray-300 rounded px-2 py-2 text-sm focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
-                                        />
-                                        <p
-                                            v-if="
-                                                formErrors[
-                                                    `addresses.${index}.phone`
-                                                ]
-                                            "
-                                            class="mt-1 text-xs text-red-600"
-                                        >
-                                            {{
-                                                formErrors[
-                                                    `addresses.${index}.phone`
-                                                ]
-                                            }}
-                                        </p>
-                                    </div>
-
-                                    <!-- line1 -->
-
-                                    <!-- code -->
-                                    <!-- Campo “Código Postal” -->
-                                    <div class="mb-4">
+                                    <!-- **Código Postal** só aparece se for a morada principal -->
+                                    <div
+                                        class="mb-4"
+                                        v-if="form.primaryIndex === index"
+                                    >
                                         <label
                                             class="block text-sm font-medium text-gray-700 mb-1"
                                         >
@@ -689,6 +825,21 @@
                                                 ]
                                             }}
                                         </p>
+                                    </div>
+
+                                    <!-- Localidade -->
+                                    <div>
+                                        <label
+                                            class="block text-gray-700 mb-1 text-sm font-medium"
+                                        >
+                                            Localidade
+                                        </label>
+                                        <input
+                                            type="text"
+                                            v-model="addr.localidade"
+                                            placeholder="Ex.: Bairro, Localidade"
+                                            class="w-full border border-gray-300 rounded px-2 py-2 text-sm focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                                        />
                                     </div>
 
                                     <!-- city -->
@@ -840,33 +991,54 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch } from "vue";
+import { ref, reactive, watch, computed } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
 import { useToast } from "vue-toastification";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 
+// ================================
+// Definição de props
+// ================================
 const props = defineProps({
     addressTypes: Array,
     clientGroups: Array,
     subdivisions: Array,
     selectedGroup: [String, Number, null],
     selectedSub: [String, Number, null],
+
+    vendor: {
+        type: Object,
+        default: null,
+    },
 });
 
 const toast = useToast();
 const activeTab = ref("cliente");
 
-// Classe para estilizar abas
 const tabClass = (tab) =>
     activeTab.value === tab
         ? "border-b-2 border-pink-600 text-pink-600"
         : "border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300";
 
+const vendorDisplay = computed(() => {
+    // Se não houver vendor, retorna texto padrão
+    if (!props.vendor) {
+        return "Sem vendedor associado";
+    }
+    const ext = props.vendor.external_id ?? "";
+    const nm = props.vendor.name ?? "";
+    return `${ext} – ${nm}`;
+});
+
+// ================================
 // Estado reativo do formulário Inertia
+// ================================
 const form = useForm({
     name: "",
     nif: "",
     url: "",
+    vendor_id: props.vendor?.id ?? null,
+
     client_group_id: props.selectedGroup || null,
     group_subdivision_id: props.selectedSub || null,
 
@@ -882,11 +1054,12 @@ const form = useForm({
             line2: "",
             line3: "",
             code: "",
+            localidade: "",
             city: "",
             state: "",
             country: "",
-            primary: 1, // Marca a primeira morada como principal
-            primaryIndex: 0, // Índice da morada principal
+            primary: 1, // marca a primeira morada como principal
+            primaryIndex: 0, // índice da morada principal
             transporte_id: "",
             pagamento_id: "",
             preco_id: "",
@@ -916,6 +1089,7 @@ const subdivisions = ref(props.subdivisions || []);
 function addAddress() {
     form.addresses.push({
         address_type_id: null,
+        //external_id: "",
         name: "",
         address: "",
         contact: "",
@@ -924,11 +1098,12 @@ function addAddress() {
         line2: "",
         line3: "",
         code: "",
+        localidade: "",
         city: "",
         state: "",
         country: "",
-        primary: 1, // Marca a primeira morada como principal
-        primaryIndex: 0, // Índice da morada principal
+        primary: 1,
+        primaryIndex: 0,
         transporte_id: "",
         pagamento_id: "",
         preco_id: "",
@@ -975,10 +1150,96 @@ const onGroupChange = async () => {
     }
 };
 
+// ================================
+// Mapeamento de prefixos para zona e zona comercial
+// ================================
+const postalInfo = {
+    1000: { zona: "LISBOA", comercial: "Sul" },
+    2000: { zona: "SANTARÉM", comercial: "Sul" },
+    2400: { zona: "LEIRIA", comercial: "Centro" },
+    2900: { zona: "SETÚBAL", comercial: "Sul" },
+    3000: { zona: "COIMBRA", comercial: "Centro" },
+    3500: { zona: "VISEU", comercial: "Centro" },
+    3800: { zona: "AVEIRO", comercial: "Centro" },
+    4000: { zona: "PORTO", comercial: "Norte" },
+    4700: { zona: "BRAGA", comercial: "Norte" },
+    4900: { zona: "VIANA DO CASTELO", comercial: "Norte" },
+    5000: { zona: "VILA REAL", comercial: "Norte" },
+    5300: { zona: "BRAGANÇA", comercial: "Norte" },
+    6000: { zona: "CASTELO BRANCO", comercial: "Centro" },
+    6300: { zona: "GUARDA", comercial: "Centro" },
+    7000: { zona: "ÉVORA", comercial: "Sul" },
+    7300: { zona: "PORTALEGRE", comercial: "Sul" },
+    7800: { zona: "BEJA", comercial: "Sul" },
+    8000: { zona: "FARO", comercial: "Sul" },
+    9000: { zona: "MADEIRA", comercial: "Ilhas" },
+    9500: { zona: "AÇORES", comercial: "Ilhas" },
+};
+const colorsInput = ref('')
+const colorError = ref('')
+
+function prepareColors() {
+  colorError.value = ''
+  if (colorsInput.value.trim() !== '') {
+    const arr = colorsInput.value
+      .split(',')
+      .map(c => c.trim())
+      .filter(c => c)
+    if (arr.length > 3) {
+      colorError.value = 'Você só pode informar até 3 cores.'
+      return false
+    }
+    const unique = [...new Set(arr)]
+    if (unique.length !== arr.length) {
+      colorError.value = 'Não pode haver cores repetidas.'
+      return false
+    }
+    form.cor_clube_1 = arr[0] || ''
+    form.cor_clube_2 = arr[1] || ''
+    form.cor_clube_3 = arr[2] || ''
+  } else {
+    form.cor_clube_1 = ''
+    form.cor_clube_2 = ''
+    form.cor_clube_3 = ''
+  }
+  return true
+}
+
+const currentZona = ref("");
+const currentZonaComercial = ref("");
+
+watch(
+    () => form.addresses[form.primaryIndex]?.code,
+    (newCode) => {
+        const raw = (newCode || "").trim();
+        const prefix = raw.length >= 4 ? raw.substring(0, 4) : "";
+        const info = postalInfo[prefix] || null;
+        currentZona.value = info ? info.zona : "";
+        currentZonaComercial.value = info ? info.comercial : "";
+    },
+    { immediate: true }
+);
+
+const formErrors = reactive({});
+watch(
+    () => form.errors,
+    (errs) => {
+        Object.keys(errs || {}).forEach((key) => {
+            formErrors[key] = errs[key];
+        });
+    },
+    { deep: true, immediate: true }
+);
+
+// ================================
 // Submit: transforma addresses adicionando campo `primary`
+// ================================
 function submit() {
     form.errorMessages = [];
     form.processing = true;
+      if (!prepareColors()) {
+    return
+  }
 
     // Antes de enviar, montar payload de endereços com primary = 1 ou 0
     const transformed = {
@@ -1010,58 +1271,9 @@ function submit() {
     });
 }
 
-// Helper para ler erros aninhados em addresses
-const formErrors = reactive({});
-watch(
-    () => form.errors,
-    (errs) => {
-        Object.keys(errs || {}).forEach((key) => {
-            formErrors[key] = errs[key];
-        });
-    },
-    { deep: true, immediate: true }
-);
-
-// mapeamento de prefixos para zona e zona comercial
-const postalInfo = {
-    1000: { zona: "LISBOA", comercial: "Sul" },
-    2000: { zona: "SANTARÉM", comercial: "Sul" },
-    2400: { zona: "LEIRIA", comercial: "Centro" },
-    2900: { zona: "SETÚBAL", comercial: "Sul" },
-    3000: { zona: "COIMBRA", comercial: "Centro" },
-    3500: { zona: "VISEU", comercial: "Centro" },
-    3800: { zona: "AVEIRO", comercial: "Centro" },
-    4000: { zona: "PORTO", comercial: "Norte" },
-    4700: { zona: "BRAGA", comercial: "Norte" },
-    4900: { zona: "VIANA DO CASTELO", comercial: "Norte" },
-    5000: { zona: "VILA REAL", comercial: "Norte" },
-    5300: { zona: "BRAGANÇA", comercial: "Norte" },
-    6000: { zona: "CASTELO BRANCO", comercial: "Centro" },
-    6300: { zona: "GUARDA", comercial: "Centro" },
-    7000: { zona: "ÉVORA", comercial: "Sul" },
-    7300: { zona: "PORTALEGRE", comercial: "Sul" },
-    7800: { zona: "BEJA", comercial: "Sul" },
-    8000: { zona: "FARO", comercial: "Sul" },
-    9000: { zona: "MADEIRA", comercial: "Ilhas" },
-    9500: { zona: "AÇORES", comercial: "Ilhas" },
-};
-
-const currentZona = ref("");
-const currentZonaComercial = ref("");
-
-watch(
-    () => form.addresses[form.primaryIndex]?.code,
-    (newCode) => {
-        const raw = (newCode || "").trim();
-        const prefix = raw.length >= 4 ? raw.substring(0, 4) : "";
-        const info = postalInfo[prefix] || null;
-        currentZona.value = info ? info.zona : "";
-        currentZonaComercial.value = info ? info.comercial : "";
-    },
-    { immediate: true }
-);
-
+// ================================
 // Utility para formatar datas (caso use no futuro dentro dos campos)
+// ================================
 function formattedDate(dateString) {
     if (!dateString) return "—";
     return new Date(dateString).toLocaleString("pt-PT", {

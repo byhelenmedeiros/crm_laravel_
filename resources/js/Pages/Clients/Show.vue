@@ -298,7 +298,7 @@
 
               <!-- Complemento 3 -->
               <div>
-                <span class="block text-xs text-gray-500">Complemento 3</span>
+                <span class="block text-xs text-gray-500">Morada 3</span>
                 <span class="block text-gray-800">{{ addr.line3 ?? '—' }}</span>
               </div>
 
@@ -319,7 +319,7 @@
 
               <!-- Estado -->
               <div>
-                <span class="block text-xs text-gray-500">Estado</span>
+                <span class="block text-xs text-gray-500">Distrito</span>
                 <span class="block text-gray-800">{{ addr.state ?? '—' }}</span>
               </div>
 

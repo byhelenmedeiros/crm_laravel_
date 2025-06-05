@@ -50,97 +50,153 @@ class ClientController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\Response
      */
-public function store(Request $request)
-{
-    try {
-        DB::beginTransaction();
+   public function store(Request $request)
+    {
+        try {
+            DB::beginTransaction();
 
-        Log::info('ClientController@store chamado com dados:', $request->all());
+            Log::info('ClientController@store chamado com dados:', $request->all());
 
-        $user = auth()->user();
+            $user = auth()->user();
 
-        // 1) Validação dos dados básicos do cliente
-        $validatedClient = $request->validate([
-            'name'                  => 'required|string|max:255',
-            'nif'                   => 'nullable|string|max:9',
-            'url'                   => 'nullable|url',
-            'clientable_type'       => 'nullable|string|max:255',
-            'clientable_id'         => 'nullable|integer',
-            'client_group_id'       => 'nullable|exists:client_groups,id',
-            'group_subdivision_id'  => 'nullable|exists:group_subdivisions,id',
-             'zone_id'   => 'nullable|exists:zones,id',
-            'vendor_id' => 'nullable|exists:vendors,id',
-        ]);
+            // 1) Validação dos dados básicos do cliente (incluindo campos novos)
+            $validatedClient = $request->validate([
+                'name'                          => 'required|string|max:255',
+                'nif'                           => 'nullable|string|max:9',
+                'url'                           => 'nullable|url',
+                'clientable_type'               => 'nullable|string|max:255',
+                'clientable_id'                 => 'nullable|integer',
+                'client_group_id'               => 'nullable|exists:client_groups,id',
+                'group_subdivision_id'          => 'nullable|exists:group_subdivisions,id',
+                'zone_id'                       => 'nullable|exists:zones,id',
+                'vendor_id'                     => 'nullable|exists:vendors,id',
 
-        // 2) Validação do array de endereços (pelo menos um)
-        $validatedAddresses = $request->validate([
-            'addresses'                           => 'required|array|min:1',
-            'addresses.*.address_type_id'         => 'required|exists:crm_address_types,id',
-            'addresses.*.address'                 => 'required|string|max:255',
-            'addresses.*.name'                    => 'nullable|string|max:255',
-            'addresses.*.contact'                 => 'nullable|string|max:255',
-            'addresses.*.phone'                   => 'nullable|string|max:20',
-            'addresses.*.line1'                   => 'nullable|string|max:255',
-            'addresses.*.line2'                   => 'nullable|string|max:255',
-            'addresses.*.line3'                   => 'nullable|string|max:255',
-            'addresses.*.code'                    => 'nullable|string|max:50',
-            'addresses.*.city'                    => 'nullable|string|max:100',
-            'addresses.*.state'                   => 'nullable|string|max:100',
-            'addresses.*.country'                 => 'nullable|string|max:100',
-            'addresses.*.primary'                 => 'sometimes|in:0,1',
-        ]);
+                // Novos campos complementares:
+                'responsavel_nome'              => 'nullable|string|max:100',
+                'recebe_email_orcamentos'       => 'required|in:s,n',
+                'recebe_email_encomendas'       => 'required|in:s,n',
+                'recebe_email_faturas'          => 'required|in:s,n',
+                'recebe_email_campanhas'        => 'required|in:s,n',
+                'data_aniversario'              => 'nullable|date',
+                'cor_clube_1'                   => 'nullable|string|max:20',
+                'cor_clube_2'                   => 'nullable|string|max:20',
+                'cor_clube_3'                   => 'nullable|string|max:20',
+                'padrao_clube'                  => 'nullable|string|max:50',
+                'cliente_desde'                 => 'nullable|date',
+                'limite_credito'                => 'nullable|numeric',
+                'notas_gerais'                  => 'nullable|string',
 
-        // 3) Cria o cliente primeiro
-        $client = Client::create([
-            'name'                  => $validatedClient['name'],
-            'nif'                   => $validatedClient['nif'] ?? null,
-            'url'                   => $validatedClient['url'] ?? null,
-            'clientable_type'       => $validatedClient['clientable_type'] ?? null,
-            'clientable_id'         => $validatedClient['clientable_id'] ?? null,
-            'client_group_id'       => $validatedClient['client_group_id'] ?? null,
-            'group_subdivision_id'  => $validatedClient['group_subdivision_id'] ?? null,
-            'user_created_id'       => $user->id,
-            'user_updated_id'       => $user->id,
-        ]);
-
-        // 4) Cria cada endereço associado ao cliente
-        foreach ($validatedAddresses['addresses'] as $addrData) {
-            $client->addresses()->create([
-                'address_type_id'  => $addrData['address_type_id'],
-                'address'          => $addrData['address'],
-                'name'             => $addrData['name']    ?? null,
-                'contact'          => $addrData['contact'] ?? null,
-                'phone'            => $addrData['phone']   ?? null,
-                'line1'            => $addrData['line1']   ?? null,
-                'line2'            => $addrData['line2']   ?? null,
-                'line3'            => $addrData['line3']   ?? null,
-                'code'             => $addrData['code']    ?? null,
-                'city'             => $addrData['city']    ?? null,
-                'state'            => $addrData['state']   ?? null,
-                'country'          => $addrData['country'] ?? null,
-                'primary'          => $addrData['primary'] ?? 0,
-                'addressable_type' => Client::class,
-                'addressable_id'   => $client->id,
-                'user_created_id'  => $user->id,
-                'user_updated_id'  => $user->id,
+                // Modalidades (array de objetos)
+                'modalidades'                   => 'nullable|array',
+                'modalidades.*.modalidade_nome' => 'required_with:modalidades|string|max:100',
+                'modalidades.*.numero_atletas'  => 'required_with:modalidades|integer|min:0',
             ]);
+
+            // 2) Validação do array de endereços (é obrigatório ter ao menos um)
+            $validatedAddresses = $request->validate([
+                'addresses'                       => 'required|array|min:1',
+                'addresses.*.address_type_id'     => 'required|exists:crm_address_types,id',
+                'addresses.*.address'             => 'required|string|max:255',
+                'addresses.*.name'                => 'nullable|string|max:255',
+                'addresses.*.contact'             => 'nullable|string|max:255',
+                'addresses.*.phone'               => 'nullable|string|max:20',
+                'addresses.*.line1'               => 'nullable|string|max:255',
+                'addresses.*.line2'               => 'nullable|string|max:255',
+                'addresses.*.line3'               => 'nullable|string|max:255',
+                'addresses.*.code'                => 'nullable|string|max:50',
+                'addresses.*.city'                => 'nullable|string|max:100',
+                'addresses.*.state'               => 'nullable|string|max:100',
+                'addresses.*.country'             => 'nullable|string|max:100',
+                'addresses.*.primary'             => 'sometimes|in:0,1',
+            ]);
+
+            // 3) Cria o cliente em crm_clients incluindo os novos campos
+            $client = Client::create([
+                'name'                  => $validatedClient['name'],
+                'nif'                   => $validatedClient['nif'] ?? null,
+                'url'                   => $validatedClient['url'] ?? null,
+                'clientable_type'       => $validatedClient['clientable_type'] ?? null,
+                'clientable_id'         => $validatedClient['clientable_id'] ?? null,
+                'client_group_id'       => $validatedClient['client_group_id'] ?? null,
+                'group_subdivision_id'  => $validatedClient['group_subdivision_id'] ?? null,
+                'zone_id'               => $validatedClient['zone_id'] ?? null,
+                'vendor_id'             => $validatedClient['vendor_id'] ?? null,
+
+                // Campos complementares
+                'responsavel_nome'              => $validatedClient['responsavel_nome'] ?? null,
+                'recebe_email_orcamentos'       => $validatedClient['recebe_email_orcamentos'],
+                'recebe_email_encomendas'       => $validatedClient['recebe_email_encomendas'],
+                'recebe_email_faturas'          => $validatedClient['recebe_email_faturas'],
+                'recebe_email_campanhas'        => $validatedClient['recebe_email_campanhas'],
+                'data_aniversario'              => $validatedClient['data_aniversario'] ?? null,
+                'cor_clube_1'                   => $validatedClient['cor_clube_1'] ?? null,
+                'cor_clube_2'                   => $validatedClient['cor_clube_2'] ?? null,
+                'cor_clube_3'                   => $validatedClient['cor_clube_3'] ?? null,
+                'padrao_clube'                  => $validatedClient['padrao_clube'] ?? null,
+                // Inicializamos número_total_atletas com 0; atualizaremos após criar modalidades
+                'numero_total_atletas'          => 0,
+                'cliente_desde'                 => $validatedClient['cliente_desde'] ?? null,
+                'limite_credito'                => $validatedClient['limite_credito'] ?? 0,
+                'notas_gerais'                  => $validatedClient['notas_gerais'] ?? null,
+
+                'user_created_id'       => $user->id,
+                'user_updated_id'       => $user->id,
+            ]);
+
+            // 4) Cria cada endereço associado ao cliente
+            foreach ($validatedAddresses['addresses'] as $addrData) {
+                $client->addresses()->create([
+                    'address_type_id'  => $addrData['address_type_id'],
+                    'address'          => $addrData['address'],
+                    'name'             => $addrData['name']    ?? null,
+                    'contact'          => $addrData['contact'] ?? null,
+                    'phone'            => $addrData['phone']   ?? null,
+                    'line1'            => $addrData['line1']   ?? null,
+                    'line2'            => $addrData['line2']   ?? null,
+                    'line3'            => $addrData['line3']   ?? null,
+                    'code'             => $addrData['code']    ?? null,
+                    'city'             => $addrData['city']    ?? null,
+                    'state'            => $addrData['state']   ?? null,
+                    'country'          => $addrData['country'] ?? null,
+                    'primary'          => $addrData['primary'] ?? 0,
+                    'addressable_type' => Client::class,
+                    'addressable_id'   => $client->id,
+                    'user_created_id'  => $user->id,
+                    'user_updated_id'  => $user->id,
+                ]);
+            }
+
+            // 5) Se vier array de modalidades, insere na tabela client_modalidades
+            $totalAtletas = 0;
+            if (!empty($validatedClient['modalidades'])) {
+                foreach ($validatedClient['modalidades'] as $m) {
+                    $client->modalidades()->create([
+                        'modalidade_nome' => $m['modalidade_nome'],
+                        'numero_atletas'  => $m['numero_atletas'],
+                    ]);
+                    $totalAtletas += $m['numero_atletas'];
+                }
+            }
+
+            // 6) Atualiza número_total_atletas em crm_clients
+            $client->numero_total_atletas = $totalAtletas;
+            $client->saveQuietly();
+
+            DB::commit();
+
+            Log::info('Cliente criado com sucesso:', ['client_id' => $client->id]);
+
+            return response()->json([
+                'message' => 'Cliente e endereços criados com sucesso!',
+                'client'  => $client->load('addresses'),
+            ], 201);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Erro ao criar cliente: ' . $e->getMessage());
+            return response()->json(['error' => 'Erro ao criar cliente'], 500);
         }
-
-        DB::commit();
-
-        Log::info('Cliente criado com sucesso:', ['client_id' => $client->id]);
-
-        return response()->json([
-            'message' => 'Cliente e endereços criados com sucesso!',
-            'client'  => $client->load('addresses'),
-        ], 201);
-
-    } catch (\Exception $e) {
-        DB::rollBack();
-        Log::error('Erro ao criar cliente: ' . $e->getMessage());
-        return response()->json(['error' => 'Erro ao criar cliente'], 500);
     }
-}
 
     /**
      * Exibe a lista paginada de clientes.
