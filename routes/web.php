@@ -1,49 +1,40 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
+use Illuminate\Support\Facades\View;
+use Illuminate\Foundation\Application;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
-*/
-
-// Rota pública (Welcome)
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin'      => Route::has('login'),
-        'canRegister'   => Route::has('register'),
-        'laravelVersion'=> Application::VERSION,
-        'phpVersion'    => PHP_VERSION,
+    return view('dashboard.welcome', [
+        'canLogin'       => Route::has('login'),
+        'canRegister'    => Route::has('register'),
+        'laravelVersion' => Application::VERSION,
+        'phpVersion'     => PHP_VERSION,
     ]);
 });
 
+Route::middleware(['auth', 'verified'])
+    ->prefix('crm')
+    ->group(function () {
+        Route::get('/dashboard', function () {
+            return view('dashboard.index', [
+                'auth' => [
+                    'user'         => auth()->user(),
+                    'isAdmin'      => auth()->user()->isAdmin ?? false,
+                    'isSuperadmin' => auth()->user()->isSuperadmin ?? false,
+                ],
+            ]);
+        })->name('dashboard');
+    });
 
-Route::middleware(['auth', 'verified'])->prefix('crm')->group(function () {
-    Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard', [
-            'auth' => [
-                'user' => auth()->user(),  
-                'isAdmin' => auth()->user()->isAdmin,
-                'isSuperadmin' => auth()->user()->isSuperadmin,
-            ],
-        ]);
-    })->name('dashboard');
-});
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+// Modularização das rotas
 require __DIR__.'/auth.php';
 require __DIR__.'/modules/users.php';
 require __DIR__.'/modules/clients.php';
